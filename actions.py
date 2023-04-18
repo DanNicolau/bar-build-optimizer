@@ -1,12 +1,50 @@
 import dataclasses
 import setup_utils
 
+
+def get_incomplete_entities(state):
+    incompletes = []
+    for ent in state.entities:
+        if (ent.is_complete == False):
+            incompletes.append(ent)
+
+    return incompletes
+
+
+#idle, blow_com, start_build, build_contribute, reclaim
+
 def generate_available_actions(state):
+
+    actions = []
+
+    # get incomplete things
+    incomplete_entities = get_incomplete_entities(state)
 
     for entity in state.entities:
 
+        if entity.id_string == 'commander':
+            actions.append((entity.id, 'blow_com'))
+
         if entity.is_builder:
             print(f'builders: {entity}')
+
+            # all builders can idle
+            actions.append( (entity.id, 'idle') )
+
+            # all builders can start a build
+            for build_option in entity.build_list:
+                actions.append( (entity.id, 'start_build', build_option) )
+
+            # all builders can build_contribute
+            for inc_ent in incomplete_entities:
+                actions.append( (entity.id, 'build_contribute', inc_ent.id) )
+
+            # all builders can reclaim other things
+            for rec_ent in state.entities:
+                if (rec_ent.is_reclaimable and rec_ent.id != entity.id):
+                    actions.append( (entity.id, 'reclaim', rec_ent.id) )
+
+    return actions
 
     
 def update_resources(state):
@@ -44,3 +82,6 @@ def generate_states(state, timestep=1.0):
     new_states = []
 
     return new_states
+
+def simulate_action(state, action):
+    raise Exception("Not implemeted yet")
