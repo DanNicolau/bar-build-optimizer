@@ -1,6 +1,7 @@
 #!/bin/python
 import setup_utils
 import actions
+from pprint import pprint
 
 entity_library = setup_utils.load_entities()
 
@@ -11,11 +12,17 @@ starting_entities = [
     entity_library['commander']
 ]
 
-desired_entities = ['mex']
+
 
 starting_state = setup_utils.TeamState(
     entities=starting_entities,
+    metal = 0.0,
+    energy = 0.0
 )
+
+pprint(starting_state)
+
+desired_entities = ['mex']
 
 desired_state = setup_utils.TeamState(
     entities=desired_entities,
@@ -31,5 +38,10 @@ while not done:
     
     for state in search_space:
         new_states = actions.generate_states(state)
+        print(f'length INSIDE: {len(search_space)}')
     
     search_space = new_states
+
+    print(f'length OUTSIDE: {(search_space)}')
+
+    done = True

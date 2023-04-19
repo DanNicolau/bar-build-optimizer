@@ -28,9 +28,10 @@ class TeamState:
     entities: List[Entity]
     available_mex: int = field(default = 3) # check mex doesn't exceed this
     base_metal_storage: float = field(default = 500.0)
-    base_energy_storage: float = field(default = 0.0)
+    base_energy_storage: float = field(default = 500.0)
     metal: float = field(default = 0)
     energy: float = field(default = 0)
+    time_elapsed: float = field(default = 0)
 
 def load_entities():
     entities = {}
