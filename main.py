@@ -24,7 +24,7 @@ starting_state = setup_utils.TeamState(
 
 # print(starting_state)
 
-desired_entities = ['mex']*3
+desired_entities = ['mex']
 
 # desired_state = setup_utils.TeamState(
 #     entities=desired_entities
@@ -43,10 +43,10 @@ while not done:
 
         #TODO remove searched elements, but somehow keep a path of how we got there?, DFS
 
-        for ns in new_states:
-            print('NEW STATE')
-            for ent in ns.entities:
-                print(ent.id_string)
+        # for ns in new_states:
+        #     print('NEW STATE')
+        #     for ent in ns.entities:
+        #         print(ent.id_string)
     
     #TODO
     # prune(new_staes)
@@ -63,6 +63,6 @@ while not done:
             done = True
             break
 
-    if (iterations == 2):
-        print('MAX ITERS MET')
-        done = True
+    # if (iterations == 2):
+    #     print('MAX ITERS MET')
+    #     done = True

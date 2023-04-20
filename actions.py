@@ -12,7 +12,7 @@ def get_incomplete_entities(state):
     return incompletes
 
 
-#idle, blow_com, start_build, build_contribute, reclaim
+#idle, blow_com, start_build, help_build, reclaim
 
 def generate_available_actions(state):
 
@@ -27,10 +27,10 @@ def generate_available_actions(state):
             actions.append((entity.id, 'blow_com')) # will we ever have no builders? may need global idle with no builders
 
         if entity.is_builder:
-            print(f'builders: {entity}')
+            # print(f'builders: {entity}')
 
             # all builders can idle
-            actions.append( (entity.id, 'idle') )
+            # actions.append( (entity.id, 'idle') )
 
             # all builders can start a build
             for build_option in entity.build_list:
@@ -46,14 +46,14 @@ def generate_available_actions(state):
 
                 actions.append( (entity.id, 'start_build', build_option) )
 
-            # all builders can build_contribute
+            # all builders can help_build
             for inc_ent in incomplete_entities:
-                actions.append( (entity.id, 'build_contribute', inc_ent.id) )
+                actions.append( (entity.id, 'help_build', inc_ent.id) )
 
-            # all builders can reclaim other things
-            for rec_ent in state.entities:
-                if (rec_ent.is_reclaimable and rec_ent.id != entity.id):
-                    actions.append( (entity.id, 'reclaim', rec_ent.id) )
+            # # all builders can reclaim other things
+            # for rec_ent in state.entities:
+            #     if (rec_ent.is_reclaimable and rec_ent.id != entity.id):
+            #         actions.append( (entity.id, 'reclaim', rec_ent.id) )
 
     return actions
 
@@ -79,12 +79,12 @@ def update_resources(state):
     if (state.energy > total_energy_storage):
         state.energy = total_energy_storage
 
-def generate_states(state, timestep=1.0):
+def generate_states(state, timestep=20.0):
     new_states = []
     actions = generate_available_actions(state) # each builder can start_build and help_build
 
-    print('ACTIONS')
-    print(actions)
+    # print('ACTIONS')
+    # print(actions)
 
     for action in actions:
         new_state = simulate_action(state, action, timestep) # copy state inside
@@ -92,18 +92,9 @@ def generate_states(state, timestep=1.0):
 
     return new_states
 
-def simulate_start_build(action, state, timestep, tolerance=0.01):
-
-    print(action)
-
-    new_ent = dataclasses.replace(entity_library[action[2]])
-    state.entities.append(new_ent)
-
+def contribute_build(builder, new_ent, state, timestep):
     #need to subtract proportionate amount of resources
-    builder = None
-    for ent in state.entities:
-        if (action[0] == ent.id):
-            builder = ent
+
     buildpower = builder.build_power
 
     #gotta do some ratio math here to figure out how much to build the thing
@@ -151,7 +142,33 @@ def simulate_start_build(action, state, timestep, tolerance=0.01):
     if (new_ent.work_completed >= new_ent.work_required):
         new_ent.is_complete = True
 
-#idle, blow_com, start_build, build_contribute, reclaim
+def simulate_start_build(action, state, timestep):
+
+    new_ent = dataclasses.replace(entity_library[action[2]])
+    state.entities.append(new_ent)
+    builder = None
+    for ent in state.entities:
+        if (action[0] == ent.id):
+            builder = ent
+
+    contribute_build(builder, new_ent, state, timestep)
+
+    
+
+def simulate_help_build(action, state, timestep):
+    
+    builder = None
+    build_target = None
+    for ent in state.entities:
+        if (action[0] == ent.id):
+            builder = ent
+        if (action[2] == ent.id):
+            build_target = ent
+    
+    contribute_build(builder, build_target, state, timestep)
+
+
+#idle, blow_com, start_build, help_build, reclaim
 # this must generate a new state, not point to the same state object
 def simulate_action(state, action, timestep):
 
@@ -170,5 +187,16 @@ def simulate_action(state, action, timestep):
         pass
     elif (action[1] == 'start_build'):
         simulate_start_build(action, state, timestep)
+    elif (action[1] == 'help_build'):
+        simulate_help_build(action, state, timestep)
 
     return new_state
+
+
+
+
+
+
+
+# in retrospect did not need to simulate the builders that the buildpower made up...
+# I am likely oversimulating
