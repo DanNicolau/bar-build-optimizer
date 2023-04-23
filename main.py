@@ -1,6 +1,7 @@
 #!/bin/python
 import setup_utils
 import dataclasses
+import sys
 from pprint import pprint
 
 entity_library = setup_utils.load_entities()
@@ -13,11 +14,11 @@ starting_entities = {
 
 starting_node = setup_utils.TeamState(
     entities=starting_entities,
-    metal = 1000.0,
-    energy = 1000.0
+    metal = 0.0,
+    energy = 0.0
 )
 
-desired_entities = ['mex', 'mex']
+desired_entities = ['mex', 'turbine']*3
 
 # the new strat for this will be we have infinite storage, and we spend all the resources at once
 
@@ -45,6 +46,8 @@ parents = {}
 path_costs[starting_node.hash()] = 0
 parents[starting_node.hash()] = None
 
+min_cost = sys.float_info.max
+
 while len(frontier) > 0:
 
 
@@ -52,6 +55,12 @@ while len(frontier) > 0:
 
     #check if its the goal, if it is then don't find the neighbours
     if (v.is_goal(desired_entities)):
+        print(f'popped goal {v}')
+        min_cost = min(min_cost, v.time_elapsed)
+        continue
+
+    if (v.time_elapsed > min_cost):
+        print(f'time exceeded by: {v}')
         continue
 
     v_hash = v.hash()
@@ -77,11 +86,16 @@ while len(frontier) > 0:
 
                 frontier.append(neighbour)
 
+    print(f'min_cost: {min_cost}, len(frontier): {len(frontier)}')
     print('COSTS')
     print(path_costs)
     print('PARENTS')
     print(parents)
 
-    print(f'FRONTIER: {frontier}')
-
+    print('FRONTIER')
+    print(frontier)
     # explored_space.append(v)
+
+print(len(frontier))
+
+print('DONE')

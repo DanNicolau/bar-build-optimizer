@@ -61,13 +61,13 @@ class TeamState:
     
 
     def time_to_generate_metal(self, cost_metal):
-        if (self.metal > cost_metal):
+        if (self.metal >= cost_metal):
             return 0
         
         m_prod = self.get_metal_production()
 
-        if(m_prod < 0):
-            raise ValueError("metal prod is negative, goal will never be reached")
+        if(m_prod <= 0):
+            raise ValueError("metal prod is negative or 0, goal will never be reached")
         else:
             ttm = (cost_metal - self.metal) / m_prod
             return ttm
@@ -79,13 +79,13 @@ class TeamState:
         return e_prod
     
     def time_to_generate_energy(self, cost_energy):
-        if (self.energy > cost_energy):
+        if (self.energy >= cost_energy):
             return 0
         
         e_prod = self.get_energy_production()
 
-        if (e_prod < 0):
-            raise ValueError("energy prod is negative, goal will never be reached")
+        if (e_prod <= 0):
+            raise ValueError("energy prod is negative or 0, goal will never be reached")
         else:
             tte = (cost_energy - self.energy) / e_prod
             return tte
@@ -134,16 +134,20 @@ class TeamState:
     
     def is_goal(self, desired_entities):
         desired_counts = {}
+        found_counts = {}
         for d_ent in desired_entities:
             if not d_ent in desired_counts:
                 desired_counts[d_ent] = 1
+                found_counts[d_ent] = 0
             else:
                 desired_counts[d_ent] += 1
         
-
-        found_counts = {}
         for ent_id, ent in self.entities.items():
-            if not ent.id_string in found_counts:
-                found_counts[ent.id_string] = 1
-            else:
+            if ent.id_string in found_counts:
                 found_counts[ent.id_string] += 1
+
+        for idx, count in found_counts.items():
+            if count < desired_counts[idx]:
+                return False
+        
+        return True
