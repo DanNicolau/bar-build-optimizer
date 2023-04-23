@@ -101,6 +101,19 @@ class TeamState:
         self.metal -= new_building.cost_metal
         self.energy -= new_building.cost_energy
 
+    def can_build_mex(self, options):
+        mex_available = options['mex_available']
+        mex_taken = 0
+        for ent_id, ent in self.entities.items():
+            if (ent.id_string == 'mex'):
+                mex_taken += 1
+        if mex_taken == mex_available:
+            return False
+        elif (mex_taken > mex_available):
+            raise ValueError("taken more mex than available") 
+
+        return True
+
     def sim_build(self, ent_to_build, options):
         ttw = ent_to_build.work_required / self.get_total_buildpower()
 
@@ -124,6 +137,9 @@ class TeamState:
         for build_str, build_option in build_options.items():
 
             # TODO metal and geo limits should go here
+            if (build_str == 'mex' and not self.can_build_mex(options)):
+                continue
+
 
             neighbour = self.new_state()
             success = neighbour.sim_build(build_option, options)
