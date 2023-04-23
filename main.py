@@ -17,7 +17,7 @@ starting_node = setup_utils.TeamState(
     energy = 1000.0
 )
 
-desired_entities = ['mex']
+desired_entities = ['mex', 'mex']
 
 # the new strat for this will be we have infinite storage, and we spend all the resources at once
 
@@ -49,6 +49,11 @@ while len(frontier) > 0:
 
 
     v = frontier.pop(0) # default pops last time, change to first for dfs
+
+    #check if its the goal, if it is then don't find the neighbours
+    if (v.is_goal(desired_entities)):
+        continue
+
     v_hash = v.hash()
 
     # add more states to the frontier

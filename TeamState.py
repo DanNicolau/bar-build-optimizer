@@ -131,3 +131,19 @@ class TeamState:
                 neighbours.append(neighbour)
 
         return neighbours
+    
+    def is_goal(self, desired_entities):
+        desired_counts = {}
+        for d_ent in desired_entities:
+            if not d_ent in desired_counts:
+                desired_counts[d_ent] = 1
+            else:
+                desired_counts[d_ent] += 1
+        
+
+        found_counts = {}
+        for ent_id, ent in self.entities.items():
+            if not ent.id_string in found_counts:
+                found_counts[ent.id_string] = 1
+            else:
+                found_counts[ent.id_string] += 1
