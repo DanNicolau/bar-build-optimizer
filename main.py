@@ -42,9 +42,11 @@ build_options = {
 print('STARTING')
 print(starting_state)
 
+done_states = []
+
 while not done:
 
-    n = frontier.pop() # default pops last time, change to first for dfs
+    n = frontier.pop(0) # default pops last time, change to first for dfs
 
     # add more states to the frontier
     frontier.extend(generate_states(n, build_options))
