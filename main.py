@@ -2,7 +2,22 @@
 import setup_utils
 import dataclasses
 import sys
-from pprint import pprint
+
+def reconstruct_path(path_costs, parents, best_hash):
+    print('RECONSTRUCTING')
+
+    path = []
+
+    done = False
+    hash_ptr = best_hash
+    while hash_ptr != None:
+        path.append(hash_ptr)
+        hash_ptr = parents[hash_ptr]
+
+    path.reverse()
+    
+    return path
+    
 
 entity_library = setup_utils.load_entities()
 
@@ -14,8 +29,8 @@ starting_entities = {
 
 starting_node = setup_utils.TeamState(
     entities=starting_entities,
-    metal = 0.0,
-    energy = 0.0
+    metal = 1000.0,
+    energy = 1000.0
 )
 
 desired_entities = ['mex', 'turbine']*3
@@ -46,24 +61,27 @@ parents = {}
 path_costs[starting_node.hash()] = 0
 parents[starting_node.hash()] = None
 
+best_hash = None
+
 min_cost = sys.float_info.max
 
 while len(frontier) > 0:
 
 
     v = frontier.pop(0) # default pops last time, change to first for dfs
+    v_hash = v.hash()
 
     #check if its the goal, if it is then don't find the neighbours
     if (v.is_goal(desired_entities)):
-        print(f'popped goal {v}')
+        # print(f'popped goal {v}')
+        best_hash = v_hash if v.time_elapsed < min_cost else best_hash
         min_cost = min(min_cost, v.time_elapsed)
         continue
 
     if (v.time_elapsed > min_cost):
-        print(f'time exceeded by: {v}')
+        # print(f'time exceeded by: {v}')
         continue
 
-    v_hash = v.hash()
 
     # add more states to the frontier
     neighbours = v.generate_neighbours(build_options)
@@ -80,22 +98,17 @@ while len(frontier) > 0:
         else:
             # we have found this hash before, if we beat the previous strat replace the parent and cost
             if (path_costs[neighbour_hash] > neighbour.time_elapsed):
-                print('found faster path')
+                # print('found faster path')
                 path_costs[neighbour_hash] = neighbour.time_elapsed
                 parents[neighbour_hash] = v_hash
 
                 frontier.append(neighbour)
 
     print(f'min_cost: {min_cost}, len(frontier): {len(frontier)}')
-    print('COSTS')
-    print(path_costs)
-    print('PARENTS')
-    print(parents)
 
-    print('FRONTIER')
-    print(frontier)
-    # explored_space.append(v)
 
-print(len(frontier))
+ideal_path = reconstruct_path(path_costs, parents, best_hash)
+
+print(ideal_path)
 
 print('DONE')
