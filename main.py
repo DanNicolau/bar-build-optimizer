@@ -33,11 +33,9 @@ starting_node = setup_utils.TeamState(
     energy = 1000.0
 )
 
-desired_entities = ['conbot']
+desired_entities = ['conturret']
 
-# the new strat for this will be we have infinite storage, and we spend all the resources at once
-
-
+# the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
 
 build_options = {
     # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should

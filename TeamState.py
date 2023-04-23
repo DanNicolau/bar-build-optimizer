@@ -38,10 +38,10 @@ class TeamState:
                 builders.append(ent)
         return builders
     
-    def get_total_buildpower(self):
-        build_power = 0
+    def get_total_buildpower(self, building_build_power=0):
+        build_power = building_build_power
         for ent_id, ent in self.entities.items():
-            if (ent.is_builder):
+            if (ent.is_builder and not ent.is_building):
                 build_power += ent.build_power
         return build_power
     
@@ -50,7 +50,7 @@ class TeamState:
         for builder in self.get_builders():
             for build_option in builder.build_list:
                 if not build_option in build_options:
-                    build_options[build_option] = builder.build_list[build_option]
+                    build_options[build_option] = (builder.build_list[build_option], builder)
         return build_options
 
     def get_metal_production(self):
@@ -128,14 +128,14 @@ class TeamState:
         new_wreck = replace(wreck)
         self.entities[new_wreck.id] = new_wreck
 
-    def sim_build(self, ent_to_build, options):
+    def sim_build(self, ent_to_build, building_build_power, options):
         
         if (ent_to_build.id_string == 'commander_wreck'):
             print(ent_to_build)
             self.blow_com(ent_to_build)
             self.elapse_time(options['time_to_blow_com'])
         else:
-            ttw = ent_to_build.work_required / self.get_total_buildpower()
+            ttw = ent_to_build.work_required / self.get_total_buildpower(building_build_power)
 
             try:
                 ttm = self.time_to_generate_metal(ent_to_build.cost_metal)
@@ -160,11 +160,15 @@ class TeamState:
             # if (build_str == 'mex' and not self.can_build_mex(options)):
             #     continue
 
+            build_option_ent, builder = build_option
+
             if (self.check_build_restricted(build_str, options)):
                 continue
 
+            building_build_power = builder.build_power if builder.is_building else 0
+
             neighbour = self.new_state()
-            success = neighbour.sim_build(build_option, options)
+            success = neighbour.sim_build(build_option_ent, building_build_power, options)
             if (success):
                 neighbours.append(neighbour)
 

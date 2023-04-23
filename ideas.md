@@ -5,7 +5,9 @@ somehow limit worker swapping structures all the time, introduce swap build acti
 the shortest path is time only, but resource storage is not really prioritized so right now we are prioritizing paths with the fastest possible entity acquisition ignoring the value of storing resources for the future. I think this is a reasonable tradeoff because of the 'spend your resources' principle in BAR and RTS in general
 
 TODOS:
-buildings cannot contribute buildpower to things not built in their own building
-restrictions on counts of items:
-    possible that if the limit is used in the final solution, we can expand the limit for that criteria and reduce the limit of other resources with some leeway to see if the restriction is creating a suboptimal solution
+
 resource storage?
+
+pruning
+
+early exit
