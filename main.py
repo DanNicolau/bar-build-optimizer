@@ -1,68 +1,67 @@
 #!/bin/python
 import setup_utils
-import actions
+from actions import generate_states
 import dataclasses
 from pprint import pprint
 from goals import *
 
 entity_library = setup_utils.load_entities()
 
-# print('The entities are:')
-# print(entity_library.keys())
+com = dataclasses.replace(entity_library['commander'])
 
-starting_entities = [
-    dataclasses.replace(entity_library['commander'])
-]
-
-
+starting_entities = {
+    com.id: com
+}
 
 starting_state = setup_utils.TeamState(
     entities=starting_entities,
-    metal = 0.0,
-    energy = 0.0
+    parent = -1,
+    metal = 1000.0,
+    energy = 1000.0
 )
-
-# print(starting_state)
 
 desired_entities = ['mex']
 
-# desired_state = setup_utils.TeamState(
-#     entities=desired_entities
-# )
+# the new strat for this will be we have infinite storage, and we spend all the resources at once
 
-search_space = [starting_state]
 done = False
 iterations = 0
+explored_space = []
+frontier = [starting_state]
+unexplored_space = []
+
+build_options = {
+    # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
+    "timestep": 1.0,
+    "mex_available": 3,
+    "base_metal_storage": 500,
+    "base_energy_storage": 500,
+    "entity_library": entity_library
+}
+
+print('STARTING')
+print(starting_state)
 
 while not done:
-    
-    new_states = []
 
-    for state in search_space:
-        new_states.extend(actions.generate_states(state))
+    n = frontier.pop() # default pops last time, change to first for dfs
 
-        #TODO remove searched elements, but somehow keep a path of how we got there?, DFS
+    # add more states to the frontier
+    frontier.extend(generate_states(n, build_options))
 
-        # for ns in new_states:
-        #     print('NEW STATE')
-        #     for ent in ns.entities:
-        #         print(ent.id_string)
-    
-    #TODO
-    # prune(new_staes)
-    
-    search_space = new_states
+    print(f'FRONTIER: {frontier}')
 
-
+    explored_space.append(n)
 
     iterations += 1
-    
-    for state in search_space:
-        if (goal_criteria_met(desired_entities, state)):
-            print('GOAL MET')
-            done = True
-            break
 
-    # if (iterations == 2):
-    #     print('MAX ITERS MET')
-    #     done = True
+    for ent_id, ent in n.entities.items():
+        if ent.is_complete and not ent.is_builder:
+            done = True
+
+    # done = len(frontier) == 0
+
+print(f'FRONTIER: {frontier}')
+
+print('EXPLORED:')
+print(explored_space)

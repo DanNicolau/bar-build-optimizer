@@ -1,202 +1,95 @@
 import dataclasses
 import setup_utils
 
-entity_library = setup_utils.load_entities()
 
-def get_incomplete_entities(state):
-    incompletes = []
-    for ent in state.entities:
-        if (ent.is_complete == False):
-            incompletes.append(ent)
+# def increment_resources(state, options):
+#     total_metal_production = 0
+#     total_energy_production = 0
+#     total_energy_storage = options['base_energy_storage']
+#     total_metal_storage = options['base_metal_storage']
 
-    return incompletes
+#     for id, ent in state.entities.items():
+#         total_metal_production += ent.metal_production
+#         total_energy_production += ent.energy_production
+#         total_energy_storage += ent.energy_storage
+#         total_metal_storage += ent.metal_storage
 
+#     state.metal += total_metal_production * options['timestep']
+#     state.energy += total_energy_production * options['timestep']
 
-#idle, blow_com, start_build, help_build, reclaim
+#     state.metal if state.metal <= total_metal_storage else total_metal_storage
+#     state.energy if state.energy <= total_energy_storage else total_energy_storage
 
-def generate_available_actions(state):
-
-    actions = []
-
-    # get incomplete things
-    incomplete_entities = get_incomplete_entities(state)
-
-    for entity in state.entities:
-
-        if entity.id_string == 'commander':
-            actions.append((entity.id, 'blow_com')) # will we ever have no builders? may need global idle with no builders
-
-        if entity.is_builder:
-            # print(f'builders: {entity}')
-
-            # all builders can idle
-            # actions.append( (entity.id, 'idle') )
-
-            # all builders can start a build
-            for build_option in entity.build_list:
-
-                #get mex count and make sure we aren't fulfilled already
-                if (build_option == 'mex'):
-                    mex_count = 0
-                    for ent in state.entities:
-                        if (ent.id_string == 'mex'):
-                            mex_count += 1
-                    if mex_count >= state.available_mex:
-                        continue
-
-                actions.append( (entity.id, 'start_build', build_option) )
-
-            # all builders can help_build
-            for inc_ent in incomplete_entities:
-                actions.append( (entity.id, 'help_build', inc_ent.id) )
-
-            # # all builders can reclaim other things
-            # for rec_ent in state.entities:
-            #     if (rec_ent.is_reclaimable and rec_ent.id != entity.id):
-            #         actions.append( (entity.id, 'reclaim', rec_ent.id) )
-
-    return actions
-
+# def increment_build_progress(state, options):
     
-def update_resources(state):
+#     build_pairs = []
 
-    total_metal_storage = state.base_metal_storage
-    total_energy_storage = state.base_energy_storage
-    metal_production = 0.0
-    energy_production = 0.0
+#     for id, ent in state.entities.items():
+#         if ent.is_builder and ent.build_target > 0:
+#             build_pairs.append((ent, state.entities[ent.build_target]))
 
-    for entity in state.entities:
-        if entity.is_complete:
-            total_metal_storage += entity.metal_storage
-            total_energy_storage += entity.energy_storage
-            metal_production += entity.metal_production
-            energy_production += entity.energy_production
+# def increment_state(state, options):
+#     # keep building anything we are building
+#     new_state = dataclasses.replace(state)
+#     new_state.time_elapsed += options['timestep']
 
-    state.metal += metal_production
-    if (state.metal > total_metal_storage):
-        state.metal = total_metal_storage
-    state.energy += energy_production
-    if (state.energy > total_energy_storage):
-        state.energy = total_energy_storage
+#     increment_resources(new_state, options)
+#     increment_build_progress(new_state, options)
 
-def generate_states(state, timestep=20.0):
-    new_states = []
-    actions = generate_available_actions(state) # each builder can start_build and help_build
+#     return new_state
 
-    # print('ACTIONS')
-    # print(actions)
+def generate_states(state, options):
+    #get total build list
+    #build something if we have an incomplete building available
+    builders = []
+    incomplete_entities = []
+    new_states = [state.new_state()]
+    for ent_id, ent in state.entities.items():
+        if (ent.is_builder and ent.is_complete and ent.build_target == -1): # TODO build target condition may need to be updated
+            builders.append(ent)
+        if (not ent.is_complete):
+            incomplete_entities.append(ent)
+   
+    #we can add a state for every possible build option
+    build_options = {}
+    for builder in builders:
+        for str_id, build_option in builder.build_list.items():
+            if (not (build_option.id_string in build_options)):
+                build_options[build_option.id_string] = build_option
 
-    for action in actions:
-        new_state = simulate_action(state, action, timestep) # copy state inside
-        new_states.append(new_state)
+    new_building_srcs = []
+
+    for id_str, build_option in build_options.items():
+        new_building_srcs.append(build_option)
+
+    # get available builders
+    available_builder_ids = []
+    for builder in builders:
+        if (builder.build_target == -1):
+            available_builder_ids.append(builder.id)
+
+    # print(f'available_builders: {available_builder_ids}')
+
+    # every available builder and build item combo is a new state
+    # need to make sure that we clone builder so we are not just modifying the same reference to a builder on every iter
+    for available_builder_id in available_builder_ids:
+        for new_building_src in new_building_srcs:
+
+            new_state = state.new_state()
+            new_building = new_building_src.new_building(new_id=True)
+            new_state.entities[new_building.id] = new_building
+            new_state.entities[available_builder_id].build_target = new_building.id
+            new_states.append(new_state)
+            
+    #increment time, resources, and build on new states
+    for ns in new_states:
+        ns.advance(options)
+
+    print('NEW STATES')
+    print(new_states)
+
+
 
     return new_states
 
-def contribute_build(builder, new_ent, state, timestep):
-    #need to subtract proportionate amount of resources
-
-    buildpower = builder.build_power
-
-    #gotta do some ratio math here to figure out how much to build the thing
-    ratio = buildpower * timestep / new_ent.work_required
-    metal_request_timestep = ratio * new_ent.cost_metal
-    energy_request_timestep = ratio * new_ent.cost_energy
-
-    if (metal_request_timestep <= state.metal and energy_request_timestep <= state.energy):
-        #life is good spend the money and move on
-        state.metal -= metal_request_timestep
-        state.energy -= energy_request_timestep
-        new_ent.work_completed += ratio
-
-    elif (metal_request_timestep > state.metal and energy_request_timestep <= state.energy):
-        #metal limited
-        new_ratio = state.metal / new_ent.cost_metal
-        state.metal = 0
-        state.energy -= new_ratio * new_ent.cost_energy
-        if (new_ratio > ratio):
-            raise Exception("we misunderstood the metal math")
-
-        new_ent.work_completed += new_ratio
-        
-    elif (energy_request_timestep > state.energy and metal_request_timestep <= state.metal):
-        #energy limited
-        new_ratio = state.energy / new_ent.cost_energy
-        state.energy = 0
-        state.metal -= new_ratio * new_ent.cost_metal
-        if (new_ratio > ratio):
-            raise Exception("we misunderstood the energy math")
-
-    else:
-        # both limited, find the most limiting and reduce accordingly (might replace above 2 cases)
-        new_energy_ratio = state.energy / new_ent.cost_energy
-        new_metal_ratio = state.metal / new_ent.cost_metal
-
-        if (new_energy_ratio > ratio or new_metal_ratio > ratio):
-            raise Exception("we really misunderstood the math")
-        min_ratio = min([new_energy_ratio, new_metal_ratio])
-
-        state.energy -= min_ratio * new_ent.cost_energy
-        state.metal -= min_ratio * new_ent.cost_metal
-        new_ent.work_completed += min_ratio
-
-    if (new_ent.work_completed >= new_ent.work_required):
-        new_ent.is_complete = True
-
-def simulate_start_build(action, state, timestep):
-
-    new_ent = dataclasses.replace(entity_library[action[2]])
-    state.entities.append(new_ent)
-    builder = None
-    for ent in state.entities:
-        if (action[0] == ent.id):
-            builder = ent
-
-    contribute_build(builder, new_ent, state, timestep)
-
     
-
-def simulate_help_build(action, state, timestep):
-    
-    builder = None
-    build_target = None
-    for ent in state.entities:
-        if (action[0] == ent.id):
-            builder = ent
-        if (action[2] == ent.id):
-            build_target = ent
-    
-    contribute_build(builder, build_target, state, timestep)
-
-
-#idle, blow_com, start_build, help_build, reclaim
-# this must generate a new state, not point to the same state object
-def simulate_action(state, action, timestep):
-
-    new_state = dataclasses.replace(state)
-    new_state.time_elapsed += timestep
-    update_resources(new_state)
-
-    if (action[1] == 'blow_com'):
-        updated_entities = []
-        for ent in new_state.entities:
-            if ent.id != action[0]:
-                updated_entities.append(ent)
-        updated_entities.append(entity_library['commander_wreck'])
-        new_state.entities = updated_entities
-    elif (action[1] == 'idle'):
-        pass
-    elif (action[1] == 'start_build'):
-        simulate_start_build(action, state, timestep)
-    elif (action[1] == 'help_build'):
-        simulate_help_build(action, state, timestep)
-
-    return new_state
-
-
-
-
-
-
-
-# in retrospect did not need to simulate the builders that the buildpower made up...
-# I am likely oversimulating
