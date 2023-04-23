@@ -11,7 +11,7 @@ def reconstruct_path(path_costs, parents, best_hash):
     done = False
     hash_ptr = best_hash
     while hash_ptr != None:
-        path.append(hash_ptr)
+        path.append(f' {hash_ptr}:{path_costs[hash_ptr]}')
         hash_ptr = parents[hash_ptr]
 
     path.reverse()
@@ -33,7 +33,7 @@ starting_node = setup_utils.TeamState(
     energy = 1000.0
 )
 
-desired_entities = ['mex', 'turbine']*3
+desired_entities = ['t2conbot']
 
 # the new strat for this will be we have infinite storage, and we spend all the resources at once
 
@@ -44,6 +44,7 @@ build_options = {
     # "timestep": 1.0,
     "mex_available": 3,
     "geo_available": 0,
+    "time_to_blow_com": 15,
     # "base_metal_storage": 500,
     # "base_energy_storage": 500,
     "entity_library": entity_library
@@ -71,9 +72,11 @@ while len(frontier) > 0:
     v = frontier.pop(0) # default pops last time, change to first for dfs
     v_hash = v.hash()
 
+    print(f'v: {v}')
+
     #check if its the goal, if it is then don't find the neighbours
     if (v.is_goal(desired_entities)):
-        # print(f'popped goal {v}')
+        print(f'popped goal {v}')
         best_hash = v_hash if v.time_elapsed < min_cost else best_hash
         min_cost = min(min_cost, v.time_elapsed)
         continue
@@ -88,8 +91,10 @@ while len(frontier) > 0:
 
     for neighbour in neighbours:
         neighbour_hash = neighbour.hash()
+        if (neighbour.time_elapsed >= min_cost):
+            continue
 
-        if (not neighbour_hash in parents):
+        elif (not neighbour_hash in parents):
             # first time we found this hash
             parents[neighbour_hash] = v_hash
             path_costs[neighbour_hash] = neighbour.time_elapsed
@@ -104,7 +109,7 @@ while len(frontier) > 0:
 
                 frontier.append(neighbour)
 
-    print(f'min_cost: {min_cost}, len(frontier): {len(frontier)}')
+    print(f'min_cost: {min_cost}, len(frontier): {len(frontier)}, vtime{v.time_elapsed}')
 
 
 ideal_path = reconstruct_path(path_costs, parents, best_hash)

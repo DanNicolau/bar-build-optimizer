@@ -18,7 +18,7 @@ class Entity:
     energy_storage: float = field(default = 0.0)
     metal_storage: float = field(default = 0.0)
     reclaim_value: float = field(default = 0.0)
-    is_complete: bool = field(default = False)
+    # is_complete: bool = field(default = False)
     is_reclaimable: bool = field(default = True)
 
     def __repr__(self):

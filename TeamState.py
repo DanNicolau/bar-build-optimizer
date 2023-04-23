@@ -114,20 +114,39 @@ class TeamState:
 
         return True
 
+    def get_com(self):
+        for ent_id, ent in self.entities.items():
+            if (ent.id_string == 'commander'):
+                return ent
+        return None
+
+    def blow_com(self, wreck):
+
+        com = self.get_com()
+        self.entities.pop(com.id)
+        new_wreck = replace(wreck)
+        self.entities[new_wreck.id] = new_wreck
+
     def sim_build(self, ent_to_build, options):
-        ttw = ent_to_build.work_required / self.get_total_buildpower()
+        
+        if (ent_to_build.id_string == 'commander_wreck'):
+            print(ent_to_build)
+            self.blow_com(ent_to_build)
+            self.elapse_time(options['time_to_blow_com'])
+        else:
+            ttw = ent_to_build.work_required / self.get_total_buildpower()
 
-        try:
-            ttm = self.time_to_generate_metal(ent_to_build.cost_metal)
-            tte = self.time_to_generate_energy(ent_to_build.cost_energy)
-        except ValueError as ve:
-            return False
+            try:
+                ttm = self.time_to_generate_metal(ent_to_build.cost_metal)
+                tte = self.time_to_generate_energy(ent_to_build.cost_energy)
+            except ValueError as ve:
+                return False
 
-        # print(f'times: {ttw}, {ttm}, {tte}')
-        time_to_build = max(ttm, tte, ttw)
+            # print(f'times: {ttw}, {ttm}, {tte}')
+            time_to_build = max(ttm, tte, ttw)
 
-        self.elapse_time(time_to_build)
-        self.construct_building(ent_to_build)
+            self.elapse_time(time_to_build)
+            self.construct_building(ent_to_build)
         return True
 
     def generate_neighbours(self, options):
@@ -139,7 +158,6 @@ class TeamState:
             # TODO metal and geo limits should go here
             if (build_str == 'mex' and not self.can_build_mex(options)):
                 continue
-
 
             neighbour = self.new_state()
             success = neighbour.sim_build(build_option, options)
