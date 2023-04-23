@@ -33,7 +33,7 @@ starting_node = setup_utils.TeamState(
     energy = 1000.0
 )
 
-desired_entities = ['t2conbot']
+desired_entities = ['conbot']
 
 # the new strat for this will be we have infinite storage, and we spend all the resources at once
 
@@ -42,8 +42,14 @@ desired_entities = ['t2conbot']
 build_options = {
     # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
     # "timestep": 1.0,
-    "mex_available": 3,
-    "geo_available": 0,
+    # "mex_available": 3,
+    # "geo_available": 0,
+    "build_restrictions": {
+        'mex': 3,
+        'geo': 0,
+        # 'turbine': 40,
+        # 'conbot'
+    },
     "time_to_blow_com": 15,
     # "base_metal_storage": 500,
     # "base_energy_storage": 500,
@@ -72,7 +78,7 @@ while len(frontier) > 0:
     v = frontier.pop(0) # default pops last time, change to first for dfs
     v_hash = v.hash()
 
-    print(f'v: {v}')
+    # print(f'v: {v}')
 
     #check if its the goal, if it is then don't find the neighbours
     if (v.is_goal(desired_entities)):

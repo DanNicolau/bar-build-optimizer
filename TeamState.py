@@ -101,18 +101,19 @@ class TeamState:
         self.metal -= new_building.cost_metal
         self.energy -= new_building.cost_energy
 
-    def can_build_mex(self, options):
-        mex_available = options['mex_available']
-        mex_taken = 0
-        for ent_id, ent in self.entities.items():
-            if (ent.id_string == 'mex'):
-                mex_taken += 1
-        if mex_taken == mex_available:
-            return False
-        elif (mex_taken > mex_available):
-            raise ValueError("taken more mex than available") 
+    #return True if we are build restricted
+    def check_build_restricted(self, build_str, options):
+        restrictions = options['build_restrictions']
 
-        return True
+        for ent_id, ent in self.entities.items():
+            if (ent.id_string in restrictions):
+                restrictions[ent.id_string] -= 1
+        if (build_str in restrictions):
+            restrictions[build_str] -= 1
+            if (restrictions[build_str] == 0):
+                return True
+        return False
+
 
     def get_com(self):
         for ent_id, ent in self.entities.items():
@@ -156,7 +157,10 @@ class TeamState:
         for build_str, build_option in build_options.items():
 
             # TODO metal and geo limits should go here
-            if (build_str == 'mex' and not self.can_build_mex(options)):
+            # if (build_str == 'mex' and not self.can_build_mex(options)):
+            #     continue
+
+            if (self.check_build_restricted(build_str, options)):
                 continue
 
             neighbour = self.new_state()
