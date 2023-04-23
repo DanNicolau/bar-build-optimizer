@@ -61,7 +61,7 @@ def load_entities():
 
     entities['conturret'] = Entity(
         id_string = 'conturret',
-        is_building = True,
+        is_building = False, #can only help build
         is_builder = True,
         build_list = {},
         build_power=200,
