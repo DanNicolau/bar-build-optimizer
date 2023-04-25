@@ -8,7 +8,7 @@ TODOS:
 
 resource storage?
 
-reclaim
+reclaim + com det
 
 pruning
 

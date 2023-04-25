@@ -17,7 +17,22 @@ def reconstruct_path(path_costs, parents, best_hash):
     path.reverse()
     
     return path
-    
+
+def find_added_element(list1, list2):
+    for i in range(len(list1)):
+        if i >= len(list2) or list1[i] != list2[i]:
+            return list2[i]
+    return list2[-1]
+
+def print_build_order_delta(arr):
+    prev = []
+    result = []
+    for elem in arr:
+        parts = elem.split(':')
+        buildings = parts[0].split(',')
+        added_entity = find_added_element(prev, buildings)
+        prev = buildings
+        print(f'{float(parts[1]):.2f}:\t{added_entity}')
 
 entity_library = setup_utils.load_entities()
 
@@ -43,11 +58,11 @@ build_options = {
     # "mex_available": 3,
     # "geo_available": 0,
     "build_restrictions": {
-        'mex': 3,
+        'mex': 6,
         'geo': 0,
         'botlab': 1,
         't2botlab': 1,
-        'turbine': 5,
+        'turbine': 12,
         'conturret': 4,
         'conbot': 5,
     },
@@ -76,6 +91,8 @@ min_cost = sys.float_info.max
 while len(frontier) > 0:
 
     v = frontier.pop(0) # default pops last time, change to first for dfs
+    print(f'min_cost: {min_cost:.2f}, len(frontier): {len(frontier)}, vtime{v.time_elapsed:.2f}')
+
     v_hash = v.hash()
 
     # print(f'v: {v}')
@@ -98,10 +115,13 @@ while len(frontier) > 0:
     for neighbour in neighbours:
         neighbour_hash = neighbour.hash()
         if (neighbour.time_elapsed >= min_cost):
+            # print(f'neighbour: {neighbour.time_elapsed}, mincost: {min_cost}')
+            # print("longer than current solution")
             continue
 
         elif (not neighbour_hash in parents):
             # first time we found this hash
+            # print("first find")
             parents[neighbour_hash] = v_hash
             path_costs[neighbour_hash] = neighbour.time_elapsed
 
@@ -114,12 +134,11 @@ while len(frontier) > 0:
                 parents[neighbour_hash] = v_hash
 
                 frontier.append(neighbour)
-
-    print(f'min_cost: {min_cost:.2f}, len(frontier): {len(frontier)}, vtime{v.time_elapsed:.2f}')
-
+            # else:
+            #     # print("too slow")
 
 ideal_path = reconstruct_path(path_costs, parents, best_hash)
 
 print(ideal_path)
 
-print('DONE')
+print_build_order_delta(ideal_path)
