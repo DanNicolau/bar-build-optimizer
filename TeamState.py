@@ -12,7 +12,7 @@ class TeamState:
     time_elapsed: float = field(default = 0)
 
     def __repr__(self):
-        return f'STATE {self.id} | time: {self.time_elapsed} | {self.metal}m {self.energy}e | {self.hash()}\n'
+        return f'STATE {self.id} | time: {self.time_elapsed:.2f} | {self.metal:.2f}m {self.energy:.2f}e | {self.hash()}\n'
     
     def new_state(self, new_id=True):
         new_state = replace(self)
@@ -101,17 +101,16 @@ class TeamState:
         self.metal -= new_building.cost_metal
         self.energy -= new_building.cost_energy
 
-    #return True if we are build restricted
-    def check_build_restricted(self, build_str, options):
-        restrictions = options['build_restrictions']
-
-        for ent_id, ent in self.entities.items():
-            if (ent.id_string in restrictions):
-                restrictions[ent.id_string] -= 1
-        if (build_str in restrictions):
-            restrictions[build_str] -= 1
-            if (restrictions[build_str] == 0):
+    def check_build_restricted(self, entity_id_string, build_options):
+        build_restrictions = build_options["build_restrictions"]
+        if entity_id_string in build_restrictions:
+            max_build_count = build_restrictions[entity_id_string]
+            current_build_count = len([entity for entity in self.entities.values() if entity.id_string == entity_id_string])
+            # print(f'there are {current_build_count} {entity_id_string}')
+            if current_build_count >= max_build_count:
+                # print('could not build')
                 return True
+        # print(f'could build {entity_id_string}')
         return False
 
 

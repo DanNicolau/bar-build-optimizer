@@ -33,7 +33,7 @@ starting_node = setup_utils.TeamState(
     energy = 1000.0
 )
 
-desired_entities = ['conturret']
+desired_entities = ['t2conbot']
 
 # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
 
@@ -45,8 +45,11 @@ build_options = {
     "build_restrictions": {
         'mex': 3,
         'geo': 0,
-        # 'turbine': 40,
-        # 'conbot'
+        'botlab': 1,
+        't2botlab': 1,
+        'turbine': 5,
+        'conturret': 4,
+        'conbot': 5,
     },
     "time_to_blow_com": 15,
     # "base_metal_storage": 500,
@@ -71,7 +74,6 @@ best_hash = None
 min_cost = sys.float_info.max
 
 while len(frontier) > 0:
-
 
     v = frontier.pop(0) # default pops last time, change to first for dfs
     v_hash = v.hash()
@@ -113,7 +115,7 @@ while len(frontier) > 0:
 
                 frontier.append(neighbour)
 
-    print(f'min_cost: {min_cost}, len(frontier): {len(frontier)}, vtime{v.time_elapsed}')
+    print(f'min_cost: {min_cost:.2f}, len(frontier): {len(frontier)}, vtime{v.time_elapsed:.2f}')
 
 
 ideal_path = reconstruct_path(path_costs, parents, best_hash)
