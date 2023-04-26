@@ -6,10 +6,17 @@ the shortest path is time only, but resource storage is not really prioritized s
 
 TODOS:
 
-resource storage?
+build turbines in chunks of 4 and also in 1s
+and also turbines in singles
 
 reclaim + com det
+
+reclaim_pool instead of commander wreck, we can increase the metal in the pool when things are set to be reclaimed
+
+reclaim_power ? lab buildings will have 0
 
 pruning
 
 early exit
+
+might be better to have a buildable reserve which would create a new hash where some amount of stuff is saved before it is consumed in a later hash

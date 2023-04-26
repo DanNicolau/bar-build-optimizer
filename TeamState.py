@@ -90,9 +90,20 @@ class TeamState:
             tte = (cost_energy - self.energy) / e_prod
             return tte
             
-    def elapse_time(self, time):
+    def get_storage(self, options):
+        max_m = options['base_metal_storage']
+        max_e = options['base_energy_storage']
+        for ent_id, ent in self.entities.items():
+            max_m += ent.metal_storage
+            max_e += ent.energy_storage
+        return max_m, max_e
+
+    def elapse_time(self, time, options):
+        max_m, max_e = self.get_storage(options)
         self.metal += self.get_metal_production() * time
+        self.metal = min(max_m, self.metal)
         self.energy += self.get_energy_production() * time
+        self.energy = min(max_e, self.energy)
         self.time_elapsed += time
 
     def construct_building(self, building):
@@ -132,21 +143,21 @@ class TeamState:
         if (ent_to_build.id_string == 'commander_wreck'):
             print(ent_to_build)
             self.blow_com(ent_to_build)
-            self.elapse_time(options['time_to_blow_com'])
+            self.elapse_time(options['time_to_blow_com'], options)
         else:
             ttw = ent_to_build.work_required / self.get_total_buildpower(building_build_power)
-
             try:
                 ttm = self.time_to_generate_metal(ent_to_build.cost_metal)
                 tte = self.time_to_generate_energy(ent_to_build.cost_energy)
             except ValueError as ve:
                 return False
-
-            # print(f'times: {ttw}, {ttm}, {tte}')
+            
+            # print(f'time {ent_to_build.id_string}: w{ttw:.2f}, m{ttm:.2f}, e{tte:.2f}')
             time_to_build = max(ttm, tte, ttw)
-
-            self.elapse_time(time_to_build)
-            self.construct_building(ent_to_build)
+            self.construct_building(ent_to_build) # OR THIS
+            # print(f'metal after build: {self.metal:.2f}')
+            self.elapse_time(time_to_build, options) # DOES THIS GO FIRST
+            # print(f'metal after wait: {self.metal:.2f}')
         return True
 
     def generate_neighbours(self, options):

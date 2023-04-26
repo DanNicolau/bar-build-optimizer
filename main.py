@@ -2,6 +2,7 @@
 import setup_utils
 import dataclasses
 import sys
+import cProfile
 
 def reconstruct_path(path_costs, parents, best_hash):
     print('RECONSTRUCTING')
@@ -34,111 +35,124 @@ def print_build_order_delta(arr):
         prev = buildings
         print(f'{float(parts[1]):.2f}:\t{added_entity}')
 
-entity_library = setup_utils.load_entities()
 
-com = dataclasses.replace(entity_library['commander'])
+def main():
+    entity_library = setup_utils.load_entities()
 
-starting_entities = {
-    com.id: com
-}
+    com = dataclasses.replace(entity_library['commander'])
 
-starting_node = setup_utils.TeamState(
-    entities=starting_entities,
-    metal = 1000.0,
-    energy = 1000.0
-)
+    starting_entities = {
+        com.id: com
+    }
 
-desired_entities = ['t2conbot']
+    starting_node = setup_utils.TeamState(
+        entities=starting_entities,
+        metal = 1000.0,
+        energy = 1000.0
+    )
 
-# the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
+    desired_entities = ['nuke']
 
-build_options = {
-    # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
-    # "timestep": 1.0,
-    # "mex_available": 3,
-    # "geo_available": 0,
-    "build_restrictions": {
-        'mex': 6,
-        'geo': 0,
-        'botlab': 1,
-        't2botlab': 1,
-        'turbine': 12,
-        'conturret': 4,
-        'conbot': 5,
-    },
-    "time_to_blow_com": 15,
-    # "base_metal_storage": 500,
-    # "base_energy_storage": 500,
-    "entity_library": entity_library
-}
+    # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
 
-explored_space = []
-frontier = [starting_node]
-unexplored_space = []
+    build_options = {
+        # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
+        # "timestep": 1.0,
+        "build_restrictions": {
+            'mex': 6,
+            't2mex': 6,
+            'geo': 0,
+            'botlab': 1,
+            't2botlab': 1,
+            'turbine': 40,
+            'conturret': 6,
+            'conbot': 4,
+            't2conbot': 2,
+            'fus': 2,
+            'afus': 1,
+            'e_store': 4,
+            'm_store': 2,
+            'conv': 12,
+            't2conv': 2
+        },
+        "time_to_blow_com": 15,
+        "base_metal_storage": 500,
+        "base_energy_storage": 500,
+        "entity_library": entity_library
+    }
 
-print('STARTING')
-print(starting_node)
+    explored_space = []
+    frontier = [starting_node]
+    unexplored_space = []
 
-path_costs = {}
-parents = {}
-path_costs[starting_node.hash()] = 0
-parents[starting_node.hash()] = None
+    print('STARTING')
+    print(starting_node)
 
-best_hash = None
+    path_costs = {}
+    parents = {}
+    path_costs[starting_node.hash()] = 0
+    parents[starting_node.hash()] = None
 
-min_cost = sys.float_info.max
+    best_hash = None
 
-while len(frontier) > 0:
+    min_cost = sys.float_info.max
 
-    v = frontier.pop(0) # default pops last time, change to first for dfs
-    print(f'min_cost: {min_cost:.2f}, len(frontier): {len(frontier)}, vtime{v.time_elapsed:.2f}')
+    while len(frontier) > 0:
 
-    v_hash = v.hash()
+        v = frontier.pop(0) # default pops last time, change to first for dfs
+        print(f'min_cost: {min_cost:.2f}, len(frontier): {len(frontier)}, vtime{v.time_elapsed:.2f}')
 
-    # print(f'v: {v}')
+        v_hash = v.hash()
 
-    #check if its the goal, if it is then don't find the neighbours
-    if (v.is_goal(desired_entities)):
-        print(f'popped goal {v}')
-        best_hash = v_hash if v.time_elapsed < min_cost else best_hash
-        min_cost = min(min_cost, v.time_elapsed)
-        continue
+        # print(f'v: {v}')
 
-    if (v.time_elapsed > min_cost):
-        # print(f'time exceeded by: {v}')
-        continue
-
-
-    # add more states to the frontier
-    neighbours = v.generate_neighbours(build_options)
-
-    for neighbour in neighbours:
-        neighbour_hash = neighbour.hash()
-        if (neighbour.time_elapsed >= min_cost):
-            # print(f'neighbour: {neighbour.time_elapsed}, mincost: {min_cost}')
-            # print("longer than current solution")
+        #check if its the goal, if it is then don't find the neighbours
+        if (v.is_goal(desired_entities)):
+            print(f'popped goal {v}')
+            best_hash = v_hash if v.time_elapsed < min_cost else best_hash
+            min_cost = min(min_cost, v.time_elapsed)
             continue
 
-        elif (not neighbour_hash in parents):
-            # first time we found this hash
-            # print("first find")
-            parents[neighbour_hash] = v_hash
-            path_costs[neighbour_hash] = neighbour.time_elapsed
+        if (v.time_elapsed > min_cost):
+            # print(f'time exceeded by: {v}')
+            continue
 
-            frontier.append(neighbour)
-        else:
-            # we have found this hash before, if we beat the previous strat replace the parent and cost
-            if (path_costs[neighbour_hash] > neighbour.time_elapsed):
-                # print('found faster path')
-                path_costs[neighbour_hash] = neighbour.time_elapsed
+
+        # add more states to the frontier
+        neighbours = v.generate_neighbours(build_options)
+
+        for neighbour in neighbours:
+            neighbour_hash = neighbour.hash()
+            if (neighbour.time_elapsed >= min_cost):
+                # print(f'neighbour: {neighbour.time_elapsed}, mincost: {min_cost}')
+                # print("longer than current solution")
+                continue
+
+            elif (not neighbour_hash in parents):
+                # first time we found this hash
+                # print("first find")
                 parents[neighbour_hash] = v_hash
+                path_costs[neighbour_hash] = neighbour.time_elapsed
 
                 frontier.append(neighbour)
-            # else:
-            #     # print("too slow")
+            else:
+                # we have found this hash before, if we beat the previous strat replace the parent and cost
+                if (path_costs[neighbour_hash] > neighbour.time_elapsed):
+                    # print('found faster path')
+                    path_costs[neighbour_hash] = neighbour.time_elapsed
+                    parents[neighbour_hash] = v_hash
 
-ideal_path = reconstruct_path(path_costs, parents, best_hash)
+                    frontier.append(neighbour)
+                # else:
+                #     # print("too slow")
 
-print(ideal_path)
+    ideal_path = reconstruct_path(path_costs, parents, best_hash)
 
-print_build_order_delta(ideal_path)
+    print(ideal_path)
+
+    print_build_order_delta(ideal_path)
+
+if __name__ == "__main__":
+    with cProfile.Profile() as pr:
+        main()
+    pr.print_stats()
