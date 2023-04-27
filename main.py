@@ -3,38 +3,7 @@ import setup_utils
 import dataclasses
 import sys
 import cProfile
-
-def reconstruct_path(path_costs, parents, best_hash):
-    print('RECONSTRUCTING')
-
-    path = []
-
-    done = False
-    hash_ptr = best_hash
-    while hash_ptr != None:
-        path.append(f' {hash_ptr}:{path_costs[hash_ptr]}')
-        hash_ptr = parents[hash_ptr]
-
-    path.reverse()
-    
-    return path
-
-def find_added_element(list1, list2):
-    for i in range(len(list1)):
-        if i >= len(list2) or list1[i] != list2[i]:
-            return list2[i]
-    return list2[-1]
-
-def print_build_order_delta(arr):
-    prev = []
-    result = []
-    for elem in arr:
-        parts = elem.split(':')
-        buildings = parts[0].split(',')
-        added_entity = find_added_element(prev, buildings)
-        prev = buildings
-        print(f'{float(parts[1]):.2f}:\t{added_entity}')
-
+from reconstruct_path import *
 
 def main():
     entity_library = setup_utils.load_entities()
@@ -51,7 +20,7 @@ def main():
         energy = 1000.0
     )
 
-    desired_entities = ['nuke']
+    desired_entities = ['conturret']
 
     # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
 
@@ -59,21 +28,23 @@ def main():
         # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
         # "timestep": 1.0,
         "build_restrictions": {
-            'mex': 6,
-            't2mex': 6,
+            'commander_wreck': 0,
+            'mex': 3,
+            't2mex': 3,
             'geo': 0,
             'botlab': 1,
             't2botlab': 1,
-            'turbine': 40,
-            'conturret': 6,
-            'conbot': 4,
-            't2conbot': 2,
-            'fus': 2,
-            'afus': 1,
-            'e_store': 4,
-            'm_store': 2,
-            'conv': 12,
-            't2conv': 2
+            'turbine': 4,
+            '4*turbine': 4,
+            'conturret': 4,
+            'conbot': 2,
+            't2conbot': 1,
+            'fus': 1,
+            'afus': 0,
+            'e_store': 1,
+            'm_store': 1,
+            'conv': 8,
+            't2conv': 1
         },
         "time_to_blow_com": 15,
         "base_metal_storage": 500,
@@ -95,6 +66,7 @@ def main():
 
     best_hash = None
 
+    #update this to speed up initial search removing stupid builds, if this is below fastest, no solution returns
     min_cost = sys.float_info.max
 
     while len(frontier) > 0:
@@ -155,4 +127,4 @@ def main():
 if __name__ == "__main__":
     with cProfile.Profile() as pr:
         main()
-    pr.print_stats()
+    pr.print_stats(sort='cumtime')

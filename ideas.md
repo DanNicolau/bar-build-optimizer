@@ -20,3 +20,7 @@ pruning
 early exit
 
 might be better to have a buildable reserve which would create a new hash where some amount of stuff is saved before it is consumed in a later hash
+
+known build heuristic ala A*
+
+update strings to be armturbine, corturbine etc.
