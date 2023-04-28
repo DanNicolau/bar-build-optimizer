@@ -6,21 +6,15 @@ the shortest path is time only, but resource storage is not really prioritized s
 
 TODOS:
 
-reclaim + com det
+hash does not do well with reclaim, need to include metal as second cost metric and use a completely better criteria to remove a neighbour 
 
-reclaim_pool instead of commander wreck, we can increase the metal in the pool when things are set to be reclaimed
+POP COMMANDER INTO SMALLER CHUNKS!!!!!!!
 
 static delay, this would also help solve the iterative bonus of block building not showing up in the build order
-
-reclaim_power ? lab buildings will have 0
 
 pruning
 
 early exit
-
-might be better to have a buildable reserve which would create a new hash where some amount of stuff is saved before it is consumed in a later hash
-
-why some goals negative e
 
 known build heuristic ala A*
 

@@ -118,7 +118,8 @@ def load_entities(options):
         cost_energy = 1200,
         build_power = 100,
         metal_storage = 100,
-        energy_storage = 100
+        energy_storage = 100,
+        is_reclaimable=True
     )
 
     entities['t2conbot'] = Entity(
@@ -136,7 +137,8 @@ def load_entities(options):
         cost_metal = 430,
         cost_energy = 6900,
         build_power = 180,
-        energy_storage = 100
+        energy_storage = 100,
+        is_reclaimable=True
     )
 
     entities['t2botlab'] = Entity(
@@ -161,7 +163,7 @@ def load_entities(options):
         build_list = {
             'mex': None,
             'turbine': None,
-            # 'commander_wreck': None,
+            'commander_wreck': None,
             'botlab': None,
             'e_store': None,
             'm_store': None,

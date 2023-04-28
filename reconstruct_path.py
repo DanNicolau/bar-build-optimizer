@@ -1,3 +1,6 @@
+from math import floor
+
+
 def reconstruct_path(path_costs, parents, best_hash):
     print('RECONSTRUCTING')
 
@@ -27,4 +30,7 @@ def print_build_order_delta(arr):
         buildings = parts[0].split(',')
         added_entity = find_added_element(prev, buildings)
         prev = buildings
-        print(f'{float(parts[1]):.2f}:\t{added_entity}')
+        seconds = float(parts[1])
+        minutes = floor(s / 60)
+        seconds -= minutes*60
+        print(f'{minutes}:{seconds} | \t{added_entity}')

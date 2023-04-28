@@ -38,6 +38,7 @@ class TeamState:
                 builders.append(ent)
         return builders
     
+    #takes building build power since buildings can only contribute if they are building
     def get_total_buildpower(self, building_build_power=0):
         build_power = building_build_power
         for ent_id, ent in self.entities.items():
@@ -100,17 +101,16 @@ class TeamState:
 
     def elapse_time(self, time, options):
         max_m, max_e = self.get_storage(options)
+        # print(f'BEFORE maxm: {max_m} , maxe: {max_e}, ||||| {self.metal}m | {self.energy}e')
         self.metal += self.get_metal_production() * time
         self.metal = min(max_m, self.metal)
         self.energy += self.get_energy_production() * time
         self.energy = min(max_e, self.energy)
+        # print(f'AFTER maxm: {max_m} , maxe: {max_e}, ||||| {self.metal}m | {self.energy}e')
+        if (self.metal < 0 or self.energy < 0):
+            return False
         self.time_elapsed += time
-
-    def construct_building(self, building):
-        new_building = replace(building)
-        self.entities[new_building.id] = new_building
-        self.metal -= new_building.cost_metal
-        self.energy -= new_building.cost_energy
+        return True
 
     def check_build_restricted(self, entity_id_string, build_options):
         build_restrictions = build_options["build_restrictions"]
@@ -138,10 +138,17 @@ class TeamState:
         new_wreck = replace(wreck)
         self.entities[new_wreck.id] = new_wreck
 
+    def pay_for_building(self, ent_to_build):
+        self.metal -= ent_to_build.cost_metal
+        self.energy -= ent_to_build.cost_energy
+
+    def add_building(self, ent_to_build):
+        new_ent = replace(ent_to_build)
+        self.entities[new_ent.id] = new_ent
+
     def sim_build(self, ent_to_build, building_build_power, options):
         
-        if (ent_to_build.id_string == 'commander_wreck'):
-            print(ent_to_build)
+        if (ent_to_build.id_string == 'commander_wreck'):       
             self.blow_com(ent_to_build)
             self.elapse_time(options['time_to_blow_com'], options)
         else:
@@ -150,20 +157,51 @@ class TeamState:
                 ttm = self.time_to_generate_metal(ent_to_build.cost_metal)
                 tte = self.time_to_generate_energy(ent_to_build.cost_energy)
             except ValueError as ve:
+                # print(f'cnnot finish cuz of prod {self.get_metal_production():.2f}|{self.get_energy_production():.2f}')
+                # print(self, self.entities)
                 return False
-            
-            # print(f'time {ent_to_build.id_string}: w{ttw:.2f}, m{ttm:.2f}, e{tte:.2f}')
             time_to_build = max(ttm, tte, ttw)
-            self.construct_building(ent_to_build) # OR THIS
-            # print(f'metal after build: {self.metal:.2f}')
-            self.elapse_time(time_to_build, options) # DOES THIS GO FIRST
-            # print(f'metal after wait: {self.metal:.2f}')
+
+            #pay, elapse, gain building should be the correct order
+            self.pay_for_building(ent_to_build)
+            success = self.elapse_time(time_to_build, options)
+            if not success:
+                return False
+            if (self.metal < -1 or self.energy < -1):
+                print(self)
+                raise ValueError("Resource went under 0")
+            self.add_building(ent_to_build)
+
+
+        return True
+
+    def get_reclaimables(self):
+        reclaimables = []
+        for id, ent in self.entities.items():
+            if (ent.is_reclaimable):
+                reclaimables.append(id)
+        return reclaimables
+    
+    def remove_entity(self, id):
+        self.entities.pop(id)
+
+    def sim_reclaim(self, id, options):
+        ent = self.entities[id]
+        if not ent.is_reclaimable:
+            raise ValueError("trying to reclaim non reclaimable")
+        bp = self.get_total_buildpower()
+        if (bp <= 0):
+            return False
+        ttr = ent.work_required / bp
+        self.metal += ent.cost_metal
+        self.elapse_time(ttr, options)
         return True
 
     def generate_neighbours(self, options):
         neighbours = []
         #for each thing we can build, that is a neighbour state, can figure out time and resource cost later
         build_options = self.get_build_options()
+        #building things
         for build_str, build_option in build_options.items():
 
             # TODO metal and geo limits should go here
@@ -181,6 +219,18 @@ class TeamState:
             success = neighbour.sim_build(build_option_ent, building_build_power, options)
             if (success):
                 neighbours.append(neighbour)
+
+        #reclaiming things and increase state metal
+        reclaimable_ids = self.get_reclaimables()
+        for id in reclaimable_ids:
+            neighbour = self.new_state()
+
+            success = neighbour.sim_reclaim(id, options)
+            if (success):
+                neighbours.append(neighbour)
+
+        #should we filter neighbours with 0 or less production, resources etc?
+        # no... this should be reflected in teh timeto build
 
         return neighbours
     
