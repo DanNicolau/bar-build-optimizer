@@ -6,24 +6,6 @@ import cProfile
 from reconstruct_path import *
 
 def main():
-    entity_library = setup_utils.load_entities()
-
-    com = dataclasses.replace(entity_library['commander'])
-
-    starting_entities = {
-        com.id: com
-    }
-
-    starting_node = setup_utils.TeamState(
-        entities=starting_entities,
-        metal = 1000.0,
-        energy = 1000.0
-    )
-
-    desired_entities = ['conturret']
-
-    # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
-
     build_options = {
         # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
         # "timestep": 1.0,
@@ -43,14 +25,33 @@ def main():
             'afus': 0,
             'e_store': 1,
             'm_store': 1,
-            'conv': 8,
+            'conv': 2,
+            '2*conv': 4,
             't2conv': 1
         },
         "time_to_blow_com": 15,
         "base_metal_storage": 500,
         "base_energy_storage": 500,
-        "entity_library": entity_library
+        "entity_library": None
     }
+
+    build_options['entity_library'] = setup_utils.load_entities(build_options)
+
+    com = dataclasses.replace(build_options['entity_library']['commander'])
+
+    starting_entities = {
+        com.id: com
+    }
+
+    starting_node = setup_utils.TeamState(
+        entities=starting_entities,
+        metal = 1000.0,
+        energy = 1000.0
+    )
+
+    desired_entities = ['conturret']
+
+    # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
 
     explored_space = []
     frontier = [starting_node]

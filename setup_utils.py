@@ -7,7 +7,43 @@ def fill_build_lists(entities):
         for build_str, _ in ent.build_list.items():
             ent.build_list[build_str] = entities[build_str]
 
-def load_entities():
+def generate_multiples_lookup(build_restrictions):
+    multiples = {}
+    for restriction in build_restrictions:
+        if '*' in restriction:
+            number, id_string = restriction.split('*')
+            multiples[id_string] = number
+    return multiples
+
+def include_multiples(entity_library, multiples):
+    print(f'multiples: {multiples}')
+
+    for multiple, count in multiples.items():
+        # print(multiple)
+        ent_src = entity_library[multiple]
+        ent_new = replace(ent_src)
+        ent_new.id_string = f'{count}*{multiple}'
+        fcount = float(count)
+        ent_new.work_required *= fcount
+        ent_new.cost_metal *= fcount
+        ent_new.cost_energy *= fcount
+        ent_new.build_power *= fcount
+        ent_new.energy_production *= fcount
+        ent_new.metal_production *= fcount
+        ent_new.energy_storage *= fcount
+        ent_new.metal_storage *= fcount
+        ent_new.reclaim_value *= fcount
+
+        entity_library[ent_new.id_string] = ent_new
+        
+        for id_string, ent in entity_library.items():
+            if multiple in ent.build_list:
+                ent.build_list[ent_new.id_string] = ent_new                
+
+def load_entities(options):
+
+    multiples = generate_multiples_lookup(options['build_restrictions'])
+
     entities = {}
 
     entities['commander_wreck'] = Entity(
@@ -241,5 +277,7 @@ def load_entities():
     )
 
     fill_build_lists(entities)
+
+    include_multiples(entities, multiples)
 
     return entities

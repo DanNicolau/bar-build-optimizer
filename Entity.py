@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, replace
 from typing import List, Dict
 from itertools import count
+from pprint import pprint
 
 @dataclass
 class Entity:
@@ -23,6 +24,10 @@ class Entity:
 
     def __repr__(self):
         return f'ent{self.id}-{self.id_string} '
+    
+    def long_print(self):
+        pprint(vars(self))
+
     
     def new_building(self, new_id=True):
         old_id = self.id

@@ -13,6 +13,8 @@ reclaim + com det
 
 reclaim_pool instead of commander wreck, we can increase the metal in the pool when things are set to be reclaimed
 
+static delay
+
 reclaim_power ? lab buildings will have 0
 
 pruning
