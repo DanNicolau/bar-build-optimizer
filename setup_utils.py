@@ -32,7 +32,6 @@ def include_multiples(entity_library, multiples):
         ent_new.metal_production *= fcount
         ent_new.energy_storage *= fcount
         ent_new.metal_storage *= fcount
-        ent_new.reclaim_value *= fcount
 
         entity_library[ent_new.id_string] = ent_new
         
@@ -50,7 +49,8 @@ def load_entities(options):
         id_string = 'commander_wreck',
         is_building = False,
         cost_metal = 2000.0,
-        work_required = 3600.0 # experimentally determined 
+        work_required = 3600.0, # experimentally determined
+        is_reclaimable=True
     )
 
     entities['mex'] = Entity(
@@ -62,7 +62,6 @@ def load_entities(options):
         metal_production = 1.8, # TODO probably should update this to multiply the map average or somehow get the value passed in
         energy_production = -3.0,
         metal_storage = 50.0,
-        reclaim_value = 50.0
     )
 
     entities['turbine'] = Entity(
@@ -73,7 +72,6 @@ def load_entities(options):
         cost_energy = 175.0,
         energy_production = 10, # TODO see above, same issue
         energy_storage = 0.5,
-        reclaim_value = 37.0
     )
 
     entities['conbot'] = Entity(
@@ -95,7 +93,6 @@ def load_entities(options):
         cost_metal=110,
         build_power=80,
         energy_storage=50,
-        reclaim_value=110,
     )
 
     entities['conturret'] = Entity(
@@ -106,7 +103,6 @@ def load_entities(options):
         build_power=200,
         cost_energy=3200,
         cost_metal=210,
-        reclaim_value=210,
         work_required=5312
     )
 
@@ -120,7 +116,6 @@ def load_entities(options):
         work_required = 6500,
         cost_metal = 650,
         cost_energy = 1200,
-        reclaim_value = 650,
         build_power = 100,
         metal_storage = 100,
         energy_storage = 100
@@ -140,7 +135,6 @@ def load_entities(options):
         work_required = 9500,
         cost_metal = 430,
         cost_energy = 6900,
-        reclaim_value = 430,
         build_power = 180,
         energy_storage = 100
     )
@@ -155,7 +149,6 @@ def load_entities(options):
         work_required = 75000,
         cost_metal = 2900,
         cost_energy = 15000,
-        reclaim_value = 2900,
         build_power = 300,
         metal_storage = 200,
         energy_storage = 200
@@ -181,8 +174,6 @@ def load_entities(options):
         energy_production = 25.0,
         metal_storage = 500.0,
         energy_storage = 500.0,
-        is_reclaimable = False,
-        # is_complete = True
     )
 
     entities['e_store'] = Entity(

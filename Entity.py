@@ -18,16 +18,13 @@ class Entity:
     metal_production: float = field(default = 0.0)
     energy_storage: float = field(default = 0.0)
     metal_storage: float = field(default = 0.0)
-    reclaim_value: float = field(default = 0.0)
-    # is_complete: bool = field(default = False)
-    is_reclaimable: bool = field(default = True)
+    is_reclaimable: bool = field(default = False)
 
     def __repr__(self):
         return f'ent{self.id}-{self.id_string} '
     
     def long_print(self):
         pprint(vars(self))
-
     
     def new_building(self, new_id=True):
         old_id = self.id

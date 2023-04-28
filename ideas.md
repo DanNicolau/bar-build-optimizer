@@ -25,3 +25,5 @@ why some goals negative e
 known build heuristic ala A*
 
 update strings to be armturbine, corturbine etc.
+
+desired income
