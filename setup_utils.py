@@ -49,8 +49,8 @@ def load_entities(options):
     entities['commander_wreck'] = Entity(
         id_string = 'commander_wreck',
         is_building = False,
-        reclaim_value = 2000.0,
-        # is_complete = True
+        cost_metal = 2000.0,
+        work_required = 3600.0 # experimentally determined 
     )
 
     entities['mex'] = Entity(
