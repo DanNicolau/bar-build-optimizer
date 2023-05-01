@@ -6,6 +6,8 @@ the shortest path is time only, but resource storage is not really prioritized s
 
 TODOS:
 
+multioptimization will go on forever because we can always get more metal..., trigger an end state as soon as goal is reached and only look for faster at that point -> move the code to a new file please
+
 hash does not do well with reclaim, need to include metal as second cost metric and use a completely better criteria to remove a neighbour 
 
 POP COMMANDER INTO SMALLER CHUNKS!!!!!!!
@@ -19,5 +21,7 @@ early exit
 known build heuristic ala A*
 
 update strings to be armturbine, corturbine etc.
+    -pull unit data and strings from the github or a file
 
 desired income
+

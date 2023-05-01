@@ -2,6 +2,9 @@ from math import floor
 
 
 def reconstruct_path(path_costs, parents, best_hash):
+
+    raise NotImplementedError("needs to be updated for multiobjective")
+
     print('RECONSTRUCTING')
 
     path = []
