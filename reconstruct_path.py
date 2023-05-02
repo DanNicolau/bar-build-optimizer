@@ -1,7 +1,24 @@
 from math import floor
 
 
-def reconstruct_path(path_costs, parents, best_hash):
+def get_best_goal(goals):
+    # we could take another pareto optimal goal, but we will just take the fastest now
+    min_goal = None
+    for goal in goals:
+        if (min_goal == None):
+            min_goal = goal
+        elif (min_goal[1].time_elapsed < goal[1].time_elapsed):
+            min_goal = goal
+
+    return min_goal
+
+def reconstruct_path(goals, path_costs, parents):
+
+    best_goal = get_best_goal(goals)
+
+    print(best_goal)
+
+    print(path_costs)
 
     raise NotImplementedError("needs to be updated for multiobjective")
 

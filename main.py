@@ -51,7 +51,7 @@ def main():
         energy = 1000.0
     )
 
-    desired_entities = ['mex','turbine']
+    desired_entities = ['turbine', 'mex']
 
     # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
 
@@ -77,12 +77,8 @@ def main():
 
     goals = [] #list of (state, cost) pairs
 
-    i = 0
-
     while len(frontier) > 0:
-        i+=1 
-        if (i==1000):
-            exit()
+
         print('\n\n')
         print(f'frontier: {frontier}')
 
@@ -109,7 +105,7 @@ def main():
 
             neighbour_hash = neighbour.hash()
             if (neighbour.is_goal(desired_entities)):
-                print(f'found goal {neighbour} ... moving on')
+                print(f'found new path to goal {neighbour} ... moving on')
                 optimization.handle_found_goal(neighbour, neighbour_cost, goals)
                 print(f'goals: {goals}')
                 continue
@@ -136,55 +132,6 @@ def main():
             print('c_arrs', path_costs)
             print('parents', parents)
 
-            
-            
-
-        # v = frontier.pop(0) # default pops last time, change to first for dfs
-        # print(f'min_cost: {min_cost:.2f}, len(frontier): {len(frontier)}, vtime{v.time_elapsed:.2f}')
-
-        # v_hash = v.hash()
-
-        # # print(f'v: {v}')
-
-        # #check if its the goal, if it is then don't find the neighbours
-        # if (v.is_goal(desired_entities)):
-        #     # print(f'popped goal {v}')
-        #     best_hash = v_hash if v.time_elapsed < min_cost else best_hash
-        #     min_cost = min(min_cost, v.time_elapsed)
-        #     continue
-
-        # if (v.time_elapsed > min_cost):
-        #     # print(f'time exceeded by: {v}')
-        #     continue
-
-        # # add more states to the frontier
-        # neighbours = v.generate_neighbours(build_options)
-
-        # for neighbour in neighbours:
-        #     neighbour_hash = neighbour.hash()
-        #     if (neighbour.time_elapsed >= min_cost):
-        #         # print(f'neighbour: {neighbour.time_elapsed}, mincost: {min_cost}')
-        #         # print("longer than current solution")
-        #         continue
-
-        #     elif (not neighbour_hash in parents):
-        #         # first time we found this hash
-        #         # print("first find")
-        #         parents[neighbour_hash] = v_hash
-        #         path_costs[neighbour_hash] = neighbour.time_elapsed
-
-        #         frontier.append(neighbour)
-        #     else:
-        #         # we have found this hash before, if we beat the previous strat replace the parent and cost
-        #         if (path_costs[neighbour_hash] > neighbour.time_elapsed):
-        #             # print('found faster path')
-        #             path_costs[neighbour_hash] = neighbour.time_elapsed
-        #             parents[neighbour_hash] = v_hash
-
-        #             frontier.append(neighbour)
-        #         # else:
-        #         #     # print("too slow")
-
 
     if len(goals) == 0:
         print('No solution found')
@@ -192,8 +139,9 @@ def main():
     
     print(path_costs)
     print(parents)
+    print(f'goals: {goals}')
 
-    ideal_path = reconstruct_path(path_costs, parents)
+    ideal_path = reconstruct_path(goals, path_costs, parents)
 
     print(ideal_path)
 
