@@ -36,16 +36,14 @@ def main():
         "base_energy_storage": 500,
         "entity_library": None
     }
-
     build_options['entity_library'] = setup_utils.load_entities(build_options)
 
     com = dataclasses.replace(build_options['entity_library']['commander'])
-
     starting_entities = {
         com.id: com
     }
 
-    starting_node = setup_utils.TeamState(
+    starting_state = setup_utils.TeamState(
         entities=starting_entities,
         metal = 1000.0,
         energy = 1000.0
@@ -53,99 +51,23 @@ def main():
 
     desired_entities = ['turbine', 'mex']
 
-    # the new strat for this will be we have infinite storage, and we spend all the resources at once, then calculate time
+    pareto_optimal_solutions = optimization.multi_objective_search(starting_state=starting_state,
+                                                                   desired_entities=desired_entities,
+                                                                   build_options=build_options)
 
-    explored_space = []
-    frontier = [starting_node]
-    unexplored_space = []
-
-    print('STARTING')
-    print(starting_node)
-
-    path_costs = {}
-    parents = {}
-    path_costs[starting_node.hash()] = [Cost.from_state(starting_node)]
-    print(path_costs)
-    parents[starting_node.hash()] = []
-
-    #solutions that are not dominated by others
-    pareto_optimal_solutions = []
-
-    #update this to speed up initial search removing stupid builds once any solution is found, if this is below fastest, no solution returns
-    # cost_limit = Cost(-1, sys.float_info.max, 0, 0)
-    min_time = sys.float_info.max
-
-    goals = [] #list of (state, cost) pairs
-
-    while len(frontier) > 0:
-
-        print('\n\n')
-        print(f'frontier: {frontier}')
-
-        v = frontier.pop(0)
-        v_hash = v.hash()
-        print(f'popped {v}, then generated neighbours')
-
-
-        neighbours = v.generate_neighbours(build_options)
-        print(f'neighbours: {neighbours}')
-
-        for neighbour in neighbours:
-            go_to_next_neighbour = False
-            #check neighbour costs
-            neighbour_cost = Cost.from_state(neighbour)
-            for (goal, goal_cost) in goals:
-                if (neighbour_cost.is_dominated_by(goal_cost)):
-                    print(f'skipping due to better goal, neighbour {neighbour} \tdom by {goal}')
-                    go_to_next_neighbour = True
-                    break
-
-            if go_to_next_neighbour:
-                continue
-
-            neighbour_hash = neighbour.hash()
-            if (neighbour.is_goal(desired_entities)):
-                print(f'found new path to goal {neighbour} ... moving on')
-                optimization.handle_found_goal(neighbour, neighbour_cost, goals)
-                print(f'goals: {goals}')
-                continue
-            elif (neighbour_hash in path_costs):
-                print(f'found previous hash {neighbour_hash}')
-                for existing_cost in path_costs[neighbour_hash]:
-                    if neighbour_cost.is_dominated_by(existing_cost):
-                        break #exi this node's processingt, this neighbors completely worse than another solutions
-                    elif existing_cost.is_dominated_by(neighbour_cost):
-                        #remove the existing cost and its parents since they are not relevant anymore
-                        optimization.remove_previous_path(path_costs[neighbour_hash], parents[neighbour_hash], existing_cost)
-                    #if we haven't break'd by now this needs to go on the frontier
-                    frontier.append(neighbour)
-                    
-                # raise NotImplementedError()
-            else:
-                print(f'found new hash: {neighbour_hash}')
-                #was not in the path costs
-                path_costs[neighbour_hash] = [neighbour_cost] # sketchy decision to append and remove from these lists in parallel, they must relate to each other!
-                parents[neighbour_hash] = [v_hash]
-                frontier.append(neighbour)
-
-
-            print('c_arrs', path_costs)
-            print('parents', parents)
-
-
-    if len(goals) == 0:
-        print('No solution found')
-        return
+    # if len(goals) == 0:
+    #     print('No solution found')
+    #     return
     
-    print(path_costs)
-    print(parents)
-    print(f'goals: {goals}')
+    # print(path_costs)
+    # print(parents)
+    # print(f'goals: {goals}')
 
-    ideal_path = reconstruct_path(goals, path_costs, parents)
+    # ideal_path = reconstruct_path(goals, path_costs, parents)
 
-    print(ideal_path)
+    # print(ideal_path)
 
-    print_build_order_delta(ideal_path)
+    # print_build_order_delta(ideal_path)
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:

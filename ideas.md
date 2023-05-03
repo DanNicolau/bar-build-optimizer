@@ -7,6 +7,9 @@ the shortest path is time only, but resource storage is not really prioritized s
 TODOS:
 
 multioptimization will go on forever because we can always get more metal..., trigger an end state as soon as goal is reached and only look for faster at that point -> move the code to a new file please
+    ok so i think the part im fucking up on is that this doesnt have optimal substructure... we can't really use dijkstra's so we just to a BFS/DFS w/wo a heuristic and then prune based on domination by the solution states found
+
+    can do iterative deepening if memory becomes an issue
 
 hash does not do well with reclaim, need to include metal as second cost metric and use a completely better criteria to remove a neighbour 
 
