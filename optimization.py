@@ -1,42 +1,14 @@
 from typing import List
-import TeamState
-import Cost
 from dataclasses import dataclass, field
 from itertools import count
-import Entity
-
-def remove_previous_path(costs_arr, parents_arr, cost_to_remove):
-    idx = costs_arr.index(cost_to_remove)
-    costs_arr.pop(idx)
-    parents_arr.pop(idx)
-
-def remove_inferior_goal(goals, goal_to_remove):
-    print(f'removing inferior goal: {goal_to_remove}')
-    print(f'goals: {goals}')
-
-    goals.remove(goal_to_remove)
-
-
-def handle_found_goal(new_goal: TeamState, new_goal_cost: Cost, goals: list):
-    #if the goal is dominated, return fail
-    #if the goal dominates another, excise the other from goals list
-    #update global cost limit
-
-    for i in range(len(goals)):
-        existing_goal, existing_goal_cost = goals[i]
-        if new_goal_cost.is_dominated_by(existing_goal_cost):
-            print(f'goal found was inferior')
-            return
-        elif existing_goal_cost.is_dominated_by(new_goal_cost):
-            print(f'goal {new_goal} has beat {existing_goal}')
-            remove_inferior_goal(goals, goals[i])
-
-    goals.append((new_goal, new_goal_cost))
+from Entity import Entity
+from Cost import Cost
+from TeamState import TeamState
 
 @dataclass
 class Node:
-    id: int = field(default_factory=count().__next__, init=False)
-    parent_node: int
+    # id: int = field(default_factory=count().__next__, init=False)
+    parent_node: 'Node'
     cost: Cost
     state: TeamState
 
@@ -46,7 +18,7 @@ class Node:
         new_nodes = []
 
         for n in neighbour_states:
-            new_nodes.append(Node(parent_node=self.id,
+            new_nodes.append(Node(parent_node=self,
                              cost=Cost.from_state(n),
                              state=n))
             
@@ -66,8 +38,7 @@ def is_dominated_by_any(x: Node, arr: List[Node]):
             return True
     return False
 
-
-def multi_objective_search(starting_state, desired_entities, build_options):
+def multi_objective_search(starting_state: TeamState, desired_entities: List[Entity], build_options: dict):
 
     starting_node = Node(state=starting_state,
                          cost=Cost.from_state(starting_state),
@@ -80,22 +51,19 @@ def multi_objective_search(starting_state, desired_entities, build_options):
 
         x = open_set.pop(0) # or from a heuristic or prio q or whatever
 
+        if is_dominated_by_any(x, solutions):
+            continue
 
-        print(x)
-        exit()
+        if x.state.is_goal(desired_entities):
+            update_dominion(x, solutions)
+            solutions.append(x)
+            continue
 
-        # if x is dominated by any current solutions:
-        #     continue
+        successors = x.generate_neibours(build_options)
 
-        # if x is a goal at it to the solutions
-        #     ...
-
-        # for each successor of x:
-        #     parent (s) in x
-        #     cost (s) = cost(x) + difference
-
-        #     if (s) is dominated by any goals
-        #         continue
-        #     add s to open set
+        for s in successors:
+            if is_dominated_by_any(s, solutions):
+                continue
+            open_set.append(s)
 
     return solutions

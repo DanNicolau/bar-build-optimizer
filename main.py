@@ -19,7 +19,6 @@ def main():
             'botlab': 1,
             't2botlab': 0,
             'turbine': 10,
-            '8*turbine': 0,
             'conturret': 1,
             'conbot': 1,
             't2conbot': 0,
@@ -28,8 +27,11 @@ def main():
             'e_store': 1,
             'm_store': 1,
             'conv': 2,
-            '4*conv': 0,
-            't2conv': 0
+            't2conv': 0,
+
+            # and multiples
+            # '8*turbine': 0,
+            # '4*conv': 0,
         },
         "time_to_blow_com": 15,
         "base_metal_storage": 500,
@@ -49,25 +51,13 @@ def main():
         energy = 1000.0
     )
 
-    desired_entities = ['turbine', 'mex']
+    desired_entities = ['conbot']
 
     pareto_optimal_solutions = optimization.multi_objective_search(starting_state=starting_state,
                                                                    desired_entities=desired_entities,
                                                                    build_options=build_options)
 
-    # if len(goals) == 0:
-    #     print('No solution found')
-    #     return
-    
-    # print(path_costs)
-    # print(parents)
-    # print(f'goals: {goals}')
-
-    # ideal_path = reconstruct_path(goals, path_costs, parents)
-
-    # print(ideal_path)
-
-    # print_build_order_delta(ideal_path)
+    print(pareto_optimal_solutions)
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:
