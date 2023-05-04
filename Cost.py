@@ -9,10 +9,7 @@ class Cost:
     energy: float
 
     def is_dominated_by(self, other_cost):
-        print(self)
-        print(other_cost)
         return other_cost.time_elapsed < self.time_elapsed #todo
-        #remember higher metal is a lower cost in the optimization
     
     def __init__(self, state_id, time_elapsed: float, metal: float = 0, energy: float = 0):
         self.state_id = state_id

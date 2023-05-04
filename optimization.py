@@ -4,6 +4,7 @@ from itertools import count
 from Entity import Entity
 from Cost import Cost
 from TeamState import TeamState
+from logging import debug
 
 @dataclass
 class Node:
@@ -11,6 +12,9 @@ class Node:
     parent_node: 'Node'
     cost: Cost
     state: TeamState
+
+    def __repr__(self):
+        return f'NODE {self.cost} {self.state.entities}'
 
     def generate_neibours(self, build_options):
         neighbour_states = self.state.generate_neighbours(build_options)
@@ -29,12 +33,12 @@ class Node:
     
 def update_dominion(n: Node, arr: List[Node]):
     #remove nodes in arr that are dominated by n
-    arr = [x for x in arr if not x.is_dominated_by(n)]
-    return
+    return [x for x in arr if not x.is_dominated_by(n)]
 
 def is_dominated_by_any(x: Node, arr: List[Node]):
     for y in arr:
         if x.is_dominated_by(y):
+            print(f'x: {x}, was dominated by {y}')
             return True
     return False
 
@@ -49,14 +53,20 @@ def multi_objective_search(starting_state: TeamState, desired_entities: List[Ent
 
     while len(open_set) > 0:
 
+        print(f' len open: {len(open_set)} len sol: {len(solutions)}')
+
         x = open_set.pop(0) # or from a heuristic or prio q or whatever
+        print(f'x: {x}')
+        print(f'sols: {solutions}')
 
         if is_dominated_by_any(x, solutions):
             continue
 
         if x.state.is_goal(desired_entities):
-            update_dominion(x, solutions)
+            print(f'oldsols {solutions}')
+            solutions = update_dominion(x, solutions)
             solutions.append(x)
+            print(f'newsols {solutions}')
             continue
 
         successors = x.generate_neibours(build_options)
