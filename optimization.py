@@ -5,7 +5,9 @@ from Entity import Entity
 from Cost import Cost
 from TeamState import TeamState
 import logging
-log = logging.getLogger("deez")
+import sys
+
+log = logging.getLogger("dn")
 
 @dataclass
 class Node:
@@ -55,6 +57,7 @@ def multi_objective_search(starting_state: TeamState, desired_entities: List[Ent
     while len(open_set) > 0:
 
         log.debug(f' len open: {len(open_set)} len sol: {len(solutions)}')
+        print(f'Open set length: {len(open_set)}, #sol = {len(solutions)}, cut_off={solutions[0].cost.time_elapsed if solutions else "inf" }\r', end='')
 
         x = open_set.pop(0) # or from a heuristic or prio q or whatever
         log.debug(f'x: {x}')
