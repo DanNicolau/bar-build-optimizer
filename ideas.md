@@ -23,6 +23,8 @@ update strings to be armturbine, corturbine etc.
 
 desired income
 
+multiobjective should provide small improvements since you can use entities as a key and time,m,e as the 3 cost metrics it just is very small and not worth the computational cost to ensure optimality
+
 -------
 
 genetic algorithm or sim anneal may be a better approach, this probably would be benefited by a hand fed solution example, or an initial solution that just takes a very long and easy method to get to the goal. no longer proveably optimal but should work well and easy to multithread

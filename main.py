@@ -16,11 +16,11 @@ def main():
         # "timestep": 1.0,
         "build_restrictions": {
             'commander_wreck': 1,
-            'mex': 3,
-            't2mex': 3,
+            'mex': 5,
+            't2mex': 5,
             'geo': 0,
             'botlab': 1,
-            't2botlab': 0,
+            't2botlab': 1,
             'turbine': 0,
             'conturret': 3,
             'conbot': 1,
@@ -28,7 +28,7 @@ def main():
             'fus': 0,
             'afus': 0,
             'e_store': 1,
-            'm_store': 0,
+            'm_store': 1,
             'conv': 0,
             't2conv': 0,
 
@@ -40,7 +40,8 @@ def main():
         "time_to_blow_com": 15,
         "base_metal_storage": 500,
         "base_energy_storage": 500,
-        "entity_library": None
+        "entity_library": None,
+        "prune_stalling": True
     }
     build_options['entity_library'] = setup_utils.load_entities(build_options)
 
@@ -55,7 +56,7 @@ def main():
         energy = 1000.0
     )
 
-    desired_entities = ['conturret']
+    desired_entities = ['t2botlab']
 
     pareto_optimal_solutions = optimization.multi_objective_search(starting_state=starting_state,
                                                                    desired_entities=desired_entities,

@@ -61,17 +61,20 @@ class TeamState:
         return m_prod
     
 
-    def time_to_generate_metal(self, cost_metal):
+    def time_to_generate_metal(self, cost_metal, ttw):
+
         if (self.metal >= cost_metal):
-            return 0
+            return 0, False # second value is is_stalling
         
         m_prod = self.get_metal_production()
+
+        stalling = self.metal + m_prod * ttw < cost_metal
 
         if(m_prod <= 0):
             raise ValueError("metal prod is negative or 0, goal will never be reached")
         else:
             ttm = (cost_metal - self.metal) / m_prod
-            return ttm
+            return ttm, stalling
         
     def get_energy_production(self):
         e_prod = 0
@@ -79,17 +82,19 @@ class TeamState:
             e_prod += ent.energy_production
         return e_prod
     
-    def time_to_generate_energy(self, cost_energy):
+    def time_to_generate_energy(self, cost_energy, ttw):
         if (self.energy >= cost_energy):
-            return 0
+            return 0, False # second value is is_stalling
         
         e_prod = self.get_energy_production()
+
+        stalling = self.energy + e_prod * ttw < cost_energy
 
         if (e_prod <= 0):
             raise ValueError("energy prod is negative or 0, goal will never be reached")
         else:
             tte = (cost_energy - self.energy) / e_prod
-            return tte
+            return tte, stalling
             
     def get_storage(self, options):
         max_m = options['base_metal_storage']
@@ -154,8 +159,12 @@ class TeamState:
         else:
             ttw = ent_to_build.work_required / self.get_total_buildpower(building_build_power)
             try:
-                ttm = self.time_to_generate_metal(ent_to_build.cost_metal)
-                tte = self.time_to_generate_energy(ent_to_build.cost_energy)
+                ttm, stalling_m = self.time_to_generate_metal(ent_to_build.cost_metal, ttw) #ttw passed in to check for stalling
+                tte, stalling_e = self.time_to_generate_energy(ent_to_build.cost_energy, ttw)
+
+                if (options["prune_stalling"] and (stalling_m or stalling_e)):
+                    return False
+
             except ValueError as ve:
                 # print(f'cnnot finish cuz of prod {self.get_metal_production():.2f}|{self.get_energy_production():.2f}')
                 # print(self, self.entities)
