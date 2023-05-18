@@ -1,6 +1,6 @@
 import sys
 from typing import List
-from optimization import Node
+from multiobjective_optimization import Node
 
 def get_fastest_solution(solutions: List[Node]):
     min_time = sys.float_info.max

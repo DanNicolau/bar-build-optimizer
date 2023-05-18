@@ -3,9 +3,10 @@ import setup_utils
 import dataclasses
 import sys
 import cProfile
-import optimization
+import multiobjective_optimization
 import solutions
 import logging
+import simulated_annealing
 from Cost import Cost
 
 # logging.basicConfig(filename="run.log", level=logging.DEBUG, filemode='w')
@@ -58,22 +59,10 @@ def main():
 
     desired_entities = ['t2botlab']
 
-    pareto_optimal_solutions = optimization.multi_objective_search(starting_state=starting_state,
-                                                                   desired_entities=desired_entities,
-                                                                   build_options=build_options)
+    simulated_annealing.optimize(starting_entities, desired_entities, build_options)
 
-    print('all solutions')
-    print(solutions)
 
-    print('fastest solution:')
-    fastest_solution = solutions.get_fastest_solution(pareto_optimal_solutions)
-    print(fastest_solution)
 
-    print('reconstructed path:')
-    fastest_path_nodes = solutions.get_path(fastest_solution)
-    build_order = solutions.get_build_order(fastest_path_nodes)
-
-    print(build_order)
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:

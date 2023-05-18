@@ -47,6 +47,8 @@ def is_dominated_by_any(x: Node, arr: List[Node]):
 
 def multi_objective_search(starting_state: TeamState, desired_entities: List[Entity], build_options: dict):
 
+    raise NotImplementedError("need to update to extract starting m and e from build_options and not use a TeamState as first arg")
+
     starting_node = Node(state=starting_state,
                          cost=Cost.from_state(starting_state),
                          parent_node=None)
