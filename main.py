@@ -42,22 +42,21 @@ def main():
         "base_metal_storage": 500,
         "base_energy_storage": 500,
         "entity_library": None,
-        "prune_stalling": True
+        "built_by": None,
+        "prune_stalling": True,
+        "starting_metal": 1000,
+        "starting_energy": 1000,
+        "search_time": 10, # seconds
     }
-    build_options['entity_library'] = setup_utils.load_entities(build_options)
+    build_options['entity_library'], build_options['built_by'] = setup_utils.load_entities(build_options)
 
+    # starting entities
     com = dataclasses.replace(build_options['entity_library']['commander'])
     starting_entities = {
         com.id: com
     }
 
-    starting_state = setup_utils.TeamState(
-        entities=starting_entities,
-        metal = 1000.0,
-        energy = 1000.0
-    )
-
-    desired_entities = ['t2botlab']
+    desired_entities = ['nuke']
 
     simulated_annealing.optimize(starting_entities, desired_entities, build_options)
 

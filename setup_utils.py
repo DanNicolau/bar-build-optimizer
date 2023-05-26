@@ -2,6 +2,18 @@ from dataclasses import dataclass, field, replace
 from TeamState import *
 from Entity import *
 
+def generate_built_by(entities: List):
+    built_by = {}
+
+    for ent_str, ent in entities.items():
+        for child_ent_str, child_ent in ent.build_list.items():
+            if not child_ent_str in built_by:
+                built_by[child_ent_str] = [ent_str]
+            else:
+                built_by[child_ent_str].append(ent_str)
+    
+    return built_by
+
 def fill_build_lists(entities):
     for ent_str, ent in entities.items():
         for build_str, _ in ent.build_list.items():
@@ -271,6 +283,8 @@ def load_entities(options):
 
     fill_build_lists(entities)
 
+    built_by = generate_built_by(entities)
+
     include_multiples(entities, multiples)
 
-    return entities
+    return entities, built_by
