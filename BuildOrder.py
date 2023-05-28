@@ -5,9 +5,7 @@ from typing import List, Dict
 class BuildOrder:
 
     starting_entities: List
-    action_list: List # actions are build:x, reclaim":x, selfdcom
-
-    
+    action_list: List # actions are build:x, reclaim":x, selfd:x
 
     def get_time_to_complete(self, build_options: Dict):
         raise NotImplementedError()
