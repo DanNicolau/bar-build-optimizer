@@ -3,27 +3,17 @@ from Entity import Entity
 from typing import Dict, List
 
 def include_in_build(current_ents, desired_ent, built_by):
+    raise NotImplementedError()
 
-    print('here')
-    print(desired_ent)
 
-    built_by_ents =  built_by[desired_ent]
-    for (built_by_ent in current_ents)
-    if built_by_ent in current_ents:
-        current_ents.append(desired_ent)
-    else:
-        for built_by_ent in built_by_ents:
-            include_in_build(current_ents, built_by_ent, built_by)
-
-    print(current_ents)
-    exit()
-
-def generate_starting_solution(starting_entities: List[Entity], desired_entities: List, build_options: Dict):
+def generate_starting_build(starting_entities: List[Entity], desired_entities: List, build_options: Dict):
     
-    # build_order = BuildOrder(
-    #     starting_entities=starting_entities,
-    #     action_list=[]
-    # )
+    build_order = BuildOrder(
+        starting_entities=starting_entities,
+        action_list=[]
+    )
+
+    return build_order
 
     built_by = build_options['built_by']
     current_entities = starting_entities.copy()
@@ -31,9 +21,12 @@ def generate_starting_solution(starting_entities: List[Entity], desired_entities
     for desired_ent in desired_entities:
         include_in_build(current_entities, desired_ent, built_by)
 
+    #hack for an initial solution: just add the t1 and t2 cons and labs
+
+
     print(current_entities)
 
-    exit(0)
+    exit()
     #table of what is built by what is in the build options
 
     return []

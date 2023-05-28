@@ -18,7 +18,7 @@ class Entity:
     metal_production: float = field(default = 0.0)
     energy_storage: float = field(default = 0.0)
     metal_storage: float = field(default = 0.0)
-    is_reclaimable: bool = field(default = False)
+    is_reclaimable: bool = field(default = True)
 
     def __repr__(self):
         return f'ent{self.id}-{self.id_string} '

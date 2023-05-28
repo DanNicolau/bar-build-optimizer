@@ -188,6 +188,7 @@ def load_entities(options):
         energy_production = 25.0,
         metal_storage = 500.0,
         energy_storage = 500.0,
+        is_reclaimable=False
     )
 
     entities['e_store'] = Entity(

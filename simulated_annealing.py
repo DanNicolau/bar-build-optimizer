@@ -2,22 +2,16 @@ import time
 import datetime
 from typing import List, Dict
 import random
-import BuildOrder
+from BuildOrder import BuildOrder
 from Entity import Entity
-from starting_solution import generate_starting_solution
+from starting_solution import generate_starting_build
+from vary import vary_solution
+from evaluate import evaluate
+from Solution import Solution
 
-
-
-#varies the solution in a small way, this must return a copy of the input, not a reference to the same object passed in
-def vary_solution():
-    raise NotImplementedError()
-
-def evaluate():
-    raise NotImplementedError()
+inf = float('inf')
 
 def acceptance_probability(candidate_solution, current_solution, temperature, build_options):
-
-    e = evaluate(solution)
 
     raise NotImplementedError()
 
@@ -28,20 +22,20 @@ def optimize(starting_entities_input: Dict, desired_entities: List, build_option
     for ent_id, ent in starting_entities_input.items():
         starting_entities.append(ent.id_string)
 
-    # best_solution = generate_starting_solution() # can play with this instead to see if current solution is very far from best seen however a learning curve might be more informational
-    current_solution = generate_starting_solution(starting_entities, desired_entities, build_options)
-
-    raise NotImplementedError()
+    # a good starting solution might not even be necessary..., we can just keep inserting until a time can be calculated, otherwise inf if prod neg or no builder
+    starting_solution = Solution(
+        build_order = generate_starting_build(starting_entities, desired_entities, build_options),
+        score = inf)
+    
+    current_solution = starting_solution # .copy() ??
 
     start_time = time.time()
     end_time = time.time() + build_options['search_time']
-
     total_seconds = end_time - start_time
-    
     iterations = 0
     while time.time() < end_time:
         temperature = float(end_time - time.time()) / total_seconds
-        candidate_solution = vary_solution(current_solution)
+        candidate_solution = vary_solution(current_solution, build_options)
 
         if (acceptance_probability(candidate_solution, current_solution, temperature, build_options) >= random.random()):
             current_solution = candidate_solution
