@@ -14,19 +14,3 @@ def generate_starting_build(starting_entities: List[Entity], desired_entities: L
     )
 
     return build_order
-
-    built_by = build_options['built_by']
-    current_entities = starting_entities.copy()
-
-    for desired_ent in desired_entities:
-        include_in_build(current_entities, desired_ent, built_by)
-
-    #hack for an initial solution: just add the t1 and t2 cons and labs
-
-
-    print(current_entities)
-
-    exit()
-    #table of what is built by what is in the build options
-
-    return []

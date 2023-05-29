@@ -8,12 +8,20 @@ from starting_solution import generate_starting_build
 from vary import vary_solution
 from evaluate import evaluate
 from Solution import Solution
+import math
 
 inf = float('inf')
 
-def acceptance_probability(candidate_solution, current_solution, temperature, build_options):
+def acceptance_probability(candidate_solution: Solution, current_solution: Solution, temperature: float, build_options: Dict):
 
-    raise NotImplementedError()
+    evaluate(candidate_solution, build_options)
+    candidate_score = candidate_solution.score
+    current_score = current_solution.score
+
+    if candidate_score >= current_score:
+        return 1.0
+    else:
+        return math.exp( -(candidate_score - current_score) / temperature )
 
 def optimize(starting_entities_input: Dict, desired_entities: List, build_options: Dict):
 

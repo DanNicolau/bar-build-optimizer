@@ -3,7 +3,7 @@ from typing import Dict
 from SimpleState import SimpleState
 
 def handle_action():
-    raise NotImplementedError
+    raise NotImplementedError()
 
 #doesnt have to return anything, just update the score
 def evaluate(solution: Solution, build_options: Dict):
@@ -13,6 +13,8 @@ def evaluate(solution: Solution, build_options: Dict):
     bo = solution.build_order
     starting_ents = bo.starting_entities
     action_list = bo.action_list
+    
+    raise NotImplementedError()
 
     state = SimpleState(starting_ents.copy(),
                         build_options['starting_metal'],
