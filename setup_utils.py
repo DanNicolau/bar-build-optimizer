@@ -109,7 +109,7 @@ def load_entities(options):
 
     entities['conturret'] = Entity(
         id_string = 'conturret',
-        is_building = False, #can only help build
+        is_building = False, #can help build from range
         is_builder = True,
         build_list = {},
         build_power=200,
@@ -131,7 +131,8 @@ def load_entities(options):
         build_power = 100,
         metal_storage = 100,
         energy_storage = 100,
-        is_reclaimable=True
+        is_reclaimable=True,
+        is_factory=True
     )
 
     entities['t2conbot'] = Entity(
@@ -165,7 +166,8 @@ def load_entities(options):
         cost_energy = 15000,
         build_power = 300,
         metal_storage = 200,
-        energy_storage = 200
+        energy_storage = 200,
+        is_factory=True
     )
 
     entities['commander'] = Entity(
@@ -175,7 +177,7 @@ def load_entities(options):
         build_list = {
             'mex': None,
             'turbine': None,
-            'commander_wreck': None,
+            # 'commander_wreck': None,
             'botlab': None,
             'e_store': None,
             'm_store': None,

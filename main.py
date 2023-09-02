@@ -15,6 +15,7 @@ def main():
     build_options = {
         # "max_incomplete_buildings": 3, # or should this be equal to the number of workers?.. it should
         # "timestep": 1.0,
+        # assume infinite if not defined
         "build_restrictions": {
             'commander_wreck': 1,
             'mex': 5,
@@ -34,9 +35,12 @@ def main():
             't2conv': 0,
 
             # and multiples
-            '8*turbine': 5,
-            '2*turbine': 2,
-            '4*conv': 2,
+
+            # MULTIPLES NOT SUPPORTED FOR SIM ANNEAL
+
+            # '8*turbine': 5,
+            # '2*turbine': 2,
+            # '4*conv': 2,
         },
         "time_to_blow_com": 15,
         "base_metal_storage": 500,

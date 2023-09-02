@@ -6,24 +6,7 @@ the shortest path is time only, but resource storage is not really prioritized s
 
 TODOS:
 
-pruning via stalling (if stalling goes to bottom of prio q)
-
-multiples doesnt work correctly for several blocks of the same type
-
-command line args for logging
-
-POP COMMANDER INTO SMALLER CHUNKS!!!!!!!
-
-static delay, this would also help solve the iterative bonus of block building not showing up in the build order
-
-early exit
-
-update strings to be armturbine, corturbine etc.
-    -pull unit data and strings from the github or a file
-
-desired income
-
-multiobjective should provide small improvements since you can use entities as a key and time,m,e as the 3 cost metrics it just is very small and not worth the computational cost to ensure optimality
+turn off converters if energy is hitting 0
 
 -------
 
