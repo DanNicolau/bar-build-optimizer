@@ -3,12 +3,8 @@ import setup_utils
 import dataclasses
 import sys
 import cProfile
-import multiobjective_optimization
-import solutions
-import logging
-import simulated_annealing
-from Cost import Cost
 
+import simulated_annealing as sa
 # logging.basicConfig(filename="run.log", level=logging.DEBUG, filemode='w')
 
 def main():
@@ -18,19 +14,19 @@ def main():
         # assume infinite if not defined
         "build_restrictions": {
             'commander_wreck': 1,
-            'mex': 5,
-            't2mex': 5,
+            'mex': 3,
+            't2mex': 0,
             'geo': 0,
             'botlab': 1,
-            't2botlab': 1,
-            'turbine': 0,
-            'conturret': 3,
+            't2botlab': 0,
+            'turbine': 4,
+            'conturret': 1,
             'conbot': 1,
             't2conbot': 0,
             'fus': 0,
             'afus': 0,
-            'e_store': 1,
-            'm_store': 1,
+            'e_store': 0,
+            'm_store': 0,
             'conv': 0,
             't2conv': 0,
 
@@ -55,14 +51,13 @@ def main():
     build_options['entity_library'], build_options['built_by'] = setup_utils.load_entities(build_options)
 
     # starting entities
-    com = dataclasses.replace(build_options['entity_library']['commander'])
-    starting_entities = {
-        com.id: com
-    }
+    starting_entities = ['commander']
+    desired_entities = ['botlab']
 
-    desired_entities = ['nuke']
+    print(f'Starting optimization for : {desired_entities}')
 
-    simulated_annealing.optimize(starting_entities, desired_entities, build_options)
+    sa.optimize(desired_entities, starting_entities, build_options)
+
 
 
 

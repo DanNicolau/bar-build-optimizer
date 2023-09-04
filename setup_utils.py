@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field, replace
-from TeamState import *
 from Entity import *
 
 def generate_built_by(entities: List):
@@ -60,8 +59,8 @@ def load_entities(options):
     entities['commander_wreck'] = Entity(
         id_string = 'commander_wreck',
         is_building = False,
-        cost_metal = 2000.0,
-        work_required = 3600.0, # experimentally determined
+        cost_metal = 1250,
+        work_required = 2250, # experimentally determined
         is_reclaimable=True
     )
 

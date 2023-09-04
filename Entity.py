@@ -26,14 +26,3 @@ class Entity:
     
     def long_print(self):
         pprint(vars(self))
-    
-    def new_building(self, new_id=True):
-        old_id = self.id
-        new_building = replace(self)
-        new_building.is_complete = False
-        new_building.work_completed = 0.0
-
-        if not new_id:
-            new_building.id = old_id
-
-        return new_building
