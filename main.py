@@ -37,6 +37,8 @@ def main():
             # '8*turbine': 5,
             # '2*turbine': 2,
             # '4*conv': 2,
+
+            'default_allow': False,
         },
         "time_to_blow_com": 15,
         "base_metal_storage": 500,

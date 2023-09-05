@@ -15,15 +15,13 @@
 
 # alternatively just check legality after and loop back to a different option
 
-import copy
 from dataclasses import dataclass
-from simulated_annealing.utils import generate_current_entities
+from simulated_annealing.utils import generate_current_entities, entity_counts, Action
 
-@dataclass
-class Action:
-    type: str
-    entity: str
-
+# @dataclass()
+# class Action:
+#     type: str
+#     entity: str
 
 
 def possible_builds(current_entities, build_options):
@@ -31,30 +29,39 @@ def possible_builds(current_entities, build_options):
 
     buildable = set()
 
+    counts = entity_counts(current_entities)
+
     for current_ent_str in entity_str_set:
         ent = build_options['entity_library'][current_ent_str]
         for ent_str in ent.build_list:
-            buildable.add(f'build:{ent_str}')
 
-    actions = set()
-    for ent_str in buildable:
-        actions.add(f'build:{ent_str}')
+            #ent_str is the ent we can build not accounting for counts rn
+            if not ent_str in build_options['build_restrictions']:
+                limit = 9001 if build_options['build_restrictions']['default_allow'] else 0
+            else:
+                limit = build_options['build_restrictions'][ent_str]
+
+            current = counts[ent_str] if ent_str in counts else 0
+
+            if limit - current > 0:
+                buildable.add(Action('build', ent_str))
 
     return buildable
 
 def possible_det_com(current_entities, build_options):
     if 'commander' in current_entities:
-        return {'selfd:commander'}
+        return {Action('selfd','commander')}
     else:
-        return set()
+        return {}
     
 def possible_reclaims(current_entities, build_options):
     lib = build_options['entity_library']
     reclaim_actions = set()
     for current_ent_str in current_entities:
         if lib[current_ent_str].is_reclaimable:
-            reclaim_actions.add(f'reclaim:{current_ent_str}')
+            reclaim_actions.add(Action('reclaim',current_ent_str))
 
+    print(reclaim_actions)
     return reclaim_actions
 
 def vary(current_solution, starting_entities, build_options):
@@ -70,6 +77,8 @@ def vary(current_solution, starting_entities, build_options):
 
     reclaim_actions = possible_reclaims(current_entities, build_options)
     possible_variations.update(reclaim_actions)
+
+    #
 
     print('what')
     print(possible_variations)
