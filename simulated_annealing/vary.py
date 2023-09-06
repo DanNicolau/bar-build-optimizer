@@ -15,6 +15,8 @@
 
 # alternatively just check legality after and loop back to a different option
 
+import random
+from copy import copy
 from dataclasses import dataclass
 from simulated_annealing.utils import generate_current_entities, entity_counts, Action
 
@@ -78,9 +80,13 @@ def vary(current_solution, starting_entities, build_options):
     reclaim_actions = possible_reclaims(current_entities, build_options)
     possible_variations.update(reclaim_actions)
 
-    #
+    #randomly choose to add or remove a variation
+    current_len = len(current_solution)
 
-    print('what')
-    print(possible_variations)
+    print(f'current_len {current_len}')
+    choice = random.choice(tuple(possible_variations))
+    
+    new_sol = copy(current_solution)
+    new_sol.append(choice)
 
-    exit()
+    return new_sol
