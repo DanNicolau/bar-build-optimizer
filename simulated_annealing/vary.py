@@ -51,19 +51,42 @@ def possible_builds(current_entities, build_options):
     return buildable
 
 def possible_det_com(current_entities, build_options):
-    if 'commander' in current_entities:
+    if 'commander' in current_entities and not is_final_constructor(current_entities, build_options['entity_library'], 'commander'):
         return {Action('selfd','commander')}
     else:
         return {}
     
+def is_final_constructor(current_entities, lib, ent_to_check):
+    if len(lib[ent_to_check].build_list) == 0: # not a con case
+        return False
+    
+    con_count = 0
+    for ent in current_entities:
+        if len(lib[ent].build_list) > 0:
+            con_count += 1
+        if con_count >= 2:
+            return False
+
+    return True
+
+def has_reclaimers(current_entities, lib):
+    for ent in current_entities:
+        if lib[ent].is_reclaimer:
+            return True
+    return False
+
 def possible_reclaims(current_entities, build_options):
     lib = build_options['entity_library']
     reclaim_actions = set()
+
+    if not has_reclaimers(current_entities, build_options['entity_library']):
+        return reclaim_actions
+
     for current_ent_str in current_entities:
+        if is_final_constructor(current_entities, lib, current_ent_str):
+            continue
         if lib[current_ent_str].is_reclaimable:
             reclaim_actions.add(Action('reclaim',current_ent_str))
-
-    print(reclaim_actions)
     return reclaim_actions
 
 def vary(current_solution, starting_entities, build_options):
@@ -83,9 +106,8 @@ def vary(current_solution, starting_entities, build_options):
     #randomly choose to add or remove a variation
     current_len = len(current_solution)
 
-    print(f'current_len {current_len}')
     choice = random.choice(tuple(possible_variations))
-    
+
     new_sol = copy(current_solution)
     new_sol.append(choice)
 

@@ -104,17 +104,19 @@ def load_entities(options):
         cost_metal=110,
         build_power=80,
         energy_storage=50,
+        is_reclaimer=True,
     )
 
     entities['conturret'] = Entity(
         id_string = 'conturret',
         is_building = False, #can help build from range
-        is_builder = True,
+        is_builder = True, # perhaps add new "is constructor" to check for bad sols... nvm if build_list empty is good enough
         build_list = {},
         build_power=200,
         cost_energy=3200,
         cost_metal=210,
-        work_required=5312
+        work_required=5312,
+        is_reclaimer=True
     )
 
     entities['botlab'] = Entity(
@@ -150,7 +152,8 @@ def load_entities(options):
         cost_energy = 6900,
         build_power = 180,
         energy_storage = 100,
-        is_reclaimable=True
+        is_reclaimable=True,
+        is_reclaimer=True
     )
 
     entities['t2botlab'] = Entity(
@@ -189,7 +192,8 @@ def load_entities(options):
         energy_production = 25.0,
         metal_storage = 500.0,
         energy_storage = 500.0,
-        is_reclaimable=False
+        is_reclaimable=False,
+        is_reclaimer=True
     )
 
     entities['e_store'] = Entity(

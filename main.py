@@ -54,7 +54,7 @@ def main():
 
     # starting entities
     starting_entities = ['commander']
-    desired_entities = ['botlab']
+    desired_entities = ['botlab', 'conbot']
 
     print(f'Starting optimization for : {desired_entities}')
 

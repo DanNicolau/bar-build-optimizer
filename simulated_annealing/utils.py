@@ -12,9 +12,6 @@ def generate_current_entities(current_solution, starting_entities, build_options
         elif (action.type == 'reclaim' or action.type == 'selfd'):
             #remove an entity of the correct type, otherwise throw an error
             for i in range(len(current_entities)):
-                print(action.entity)
-                print(current_entities)
-                print('\n')
                 current_entities.remove(action.entity)
                 break
 
@@ -28,3 +25,7 @@ def entity_counts(entities):
         else:
             counts[e] += 1
     return counts
+
+def print_actions(actions: list):
+    for i, a in enumerate(actions):
+        print(f'{i+1}: {a.type} {a.entity}')
