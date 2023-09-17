@@ -105,6 +105,7 @@ def load_entities(options):
         build_power=80,
         energy_storage=50,
         is_reclaimer=True,
+        is_possible_final_constructor=True,
     )
 
     entities['conturret'] = Entity(
@@ -133,7 +134,8 @@ def load_entities(options):
         metal_storage = 100,
         energy_storage = 100,
         is_reclaimable=True,
-        is_factory=True
+        is_factory=True,
+        is_possible_final_constructor = True,
     )
 
     entities['t2conbot'] = Entity(
@@ -153,7 +155,8 @@ def load_entities(options):
         build_power = 180,
         energy_storage = 100,
         is_reclaimable=True,
-        is_reclaimer=True
+        is_reclaimer=True,
+        is_possible_final_constructor = True,
     )
 
     entities['t2botlab'] = Entity(
@@ -169,7 +172,8 @@ def load_entities(options):
         build_power = 300,
         metal_storage = 200,
         energy_storage = 200,
-        is_factory=True
+        is_factory=True,
+        is_possible_final_constructor = True
     )
 
     entities['commander'] = Entity(
@@ -193,7 +197,8 @@ def load_entities(options):
         metal_storage = 500.0,
         energy_storage = 500.0,
         is_reclaimable=False,
-        is_reclaimer=True
+        is_reclaimer=True,
+        is_possible_final_constructor=True
     )
 
     entities['e_store'] = Entity(

@@ -17,98 +17,215 @@
 
 import random
 from copy import copy
-from dataclasses import dataclass
-from simulated_annealing.utils import generate_current_entities, entity_counts, Action
+from simulated_annealing.utils import entity_counts, update_counts, count_sum, Action, Variation
 
-# @dataclass()
-# class Action:
-#     type: str
-#     entity: str
+def generate_build_list(counts, lib):
+    build_list = set()
+    for ent in counts:
+        for buildable in lib[ent].build_list:
+            build_list.add(buildable)
+
+    return list(build_list)
+
+def build_step_additions(current_solution, starting_entities, build_options):
+    variations = []
+    lib = build_options['entity_library']
+    counts = entity_counts(starting_entities)
+
+    # generate variations at idx 0
+    build_list = generate_build_list(counts, lib)
+    for buildable in build_list:
+        new_action = Action('build', buildable)
+        new_variation = Variation(new_action, 0, 'add')
+        variations.append(new_variation)
+
+    # generate legal variations after every action is performed
+    for i in range(len(current_solution)):
+        action = current_solution[i]
+        #update counts
+        update_counts(counts, action)
+        build_list = generate_build_list(counts, lib)
+        for buildable in build_list:
+            new_action = Action('build', buildable)
+            new_variation = Variation(new_action, i+1, 'add')
+            variations.append(new_variation)
 
 
-def possible_builds(current_entities, build_options):
-    entity_str_set = set(current_entities)
+    return variations
 
-    buildable = set()
+def filter_reclaimers(counts, lib):
+    r = {}
+    for ent in counts:
+        if counts[ent] > 0 and lib[ent].is_reclaimer:
+            r[ent] = counts[ent]
+    return r
 
-    counts = entity_counts(current_entities)
-
-    for current_ent_str in entity_str_set:
-        ent = build_options['entity_library'][current_ent_str]
-        for ent_str in ent.build_list:
-
-            #ent_str is the ent we can build not accounting for counts rn
-            if not ent_str in build_options['build_restrictions']:
-                limit = 9001 if build_options['build_restrictions']['default_allow'] else 0
-            else:
-                limit = build_options['build_restrictions'][ent_str]
-
-            current = counts[ent_str] if ent_str in counts else 0
-
-            if limit - current > 0:
-                buildable.add(Action('build', ent_str))
-
-    return buildable
-
-def possible_det_com(current_entities, build_options):
-    if 'commander' in current_entities and not is_final_constructor(current_entities, build_options['entity_library'], 'commander'):
-        return {Action('selfd','commander')}
-    else:
-        return {}
+def generate_reclaimables(counts, lib):
+    reclaimables = []
     
-def is_final_constructor(current_entities, lib, ent_to_check):
-    if len(lib[ent_to_check].build_list) == 0: # not a con case
-        return False
+    for ent in counts:
+        if lib[ent].is_reclaimable and counts[ent] > 0:
+            reclaimables.append(ent)
+
+    return reclaimables
     
-    con_count = 0
-    for ent in current_entities:
-        if len(lib[ent].build_list) > 0:
-            con_count += 1
-        if con_count >= 2:
-            return False
+
+def is_legal_reclaim_at_idx(solution, variation, initial_counts):
+    test_solution = copy(solution)
+    test_solution.insert(variation.idx, variation.action)
+
+    test_counts = copy(initial_counts)
+
+    for action in test_solution:
+        update_counts(test_counts, action)
+        for ent in test_counts:
+            if test_counts[ent] < 0:
+                return False
 
     return True
 
-def has_reclaimers(current_entities, lib):
-    for ent in current_entities:
-        if lib[ent].is_reclaimer:
-            return True
-    return False
+#THE ISSUE
 
-def possible_reclaims(current_entities, build_options):
+# we create a legal reclaim at the current action we are iterating in the solution, HOWEVER as actions are completed, a further reclaim becomes illegal
+# proposed solution:
+# check to see if the count goes negative after a simulated reclaim, if it does, then do not propose that variation
+
+def reclaim_step_additions(current_solution, starting_entities, build_options):
+    variations = []
     lib = build_options['entity_library']
-    reclaim_actions = set()
+    counts = entity_counts(starting_entities)
+    initial_counts = copy(counts)
 
-    if not has_reclaimers(current_entities, build_options['entity_library']):
-        return reclaim_actions
-
-    for current_ent_str in current_entities:
-        if is_final_constructor(current_entities, lib, current_ent_str):
+    # generate reclaims at idx 0
+    # check for a reclaimer
+    # check to make sure the last reclaimer is not reclaiming itself? (or last builder?)
+    reclaimers = filter_reclaimers(counts, lib)
+    reclaimables = generate_reclaimables(counts, lib)
+    for reclaimable in reclaimables:
+        # so long as this is not the last reclaimer we are ok
+        if len(reclaimers) == 1 and lib[reclaimable].is_reclaimer:
             continue
-        if lib[current_ent_str].is_reclaimable:
-            reclaim_actions.add(Action('reclaim',current_ent_str))
-    return reclaim_actions
+        
+        new_action = Action('reclaim', reclaimable)
+        new_variation = Variation(new_action, 0, 'add')
+
+        if is_legal_reclaim_at_idx(current_solution, new_variation, initial_counts):
+            variations.append(new_variation)
+
+
+    # print(reclaimers)
+    # print(reclaimables)
+
+    # generate reclaims after every single action
+    for i, action in enumerate(current_solution):
+        #update counts
+        update_counts(counts, action)
+        reclaimers = filter_reclaimers(counts, lib)
+        reclaimables = generate_reclaimables(counts, lib)
+
+        for reclaimable in reclaimables:
+            if len(reclaimers) == 1 and lib[reclaimable].is_reclaimer:
+                continue
+
+            new_action = Action('reclaim', reclaimable)
+            new_variation = Variation(new_action, i+1, 'add')
+            if is_legal_reclaim_at_idx(current_solution, new_variation, initial_counts):
+                variations.append(new_variation)
+
+            
+    return variations
+
+# this could possibly leave 0 constructors if one is reclaimed after the com selfds
+# easy - we just check to make sure we have at least one "final con" remaining
+def is_legal_selfd(solution, starting_counts, variation, lib):
+    test_solution = copy(solution)
+    test_counts = copy(starting_counts)
+
+    #must have the commander and also must not create a negative count in the future for any final cons
+    test_solution.insert(variation.idx, variation.action)
+
+    for action in test_solution:
+        update_counts(test_counts, action)
+        if 'commander' in test_counts and test_counts['commander'] == 0:
+            return False # TODO this changes if rez can occur
+
+        final_con_count = 0
+        for ent in test_counts:
+            if lib[ent].is_possible_final_constructor:
+                final_con_count += 1
+        if final_con_count < 1:
+            return False
+    
+    return True
+
+
+#basically if the com is not the last constructor, consider det the com
+def selfd_com_additions(current_solution, starting_entities, build_options):
+    variations = []
+    lib = build_options['entity_library']
+    counts = entity_counts(starting_entities)
+
+    # idx 0
+    new_action = Action('selfd','commander')
+    new_variation = Variation(new_action, 0, 'add')
+
+    if is_legal_selfd(current_solution, counts, new_variation, lib):
+        variations.append(new_variation)
+
+    # after every action
+    for i, action in enumerate(current_solution):
+        new_variation = Variation(new_action, i, 'add')
+        if is_legal_selfd(current_solution, counts, new_variation, lib):
+            variations.append(new_variation)
+    
+    return variations
+
+
+
+def add_step_to_build_order_possibilities(current_solution, starting_entities, build_options):
+    variations = []
+    variations += build_step_additions(current_solution, starting_entities, build_options)
+    variations += reclaim_step_additions(current_solution, starting_entities, build_options)
+    variations += selfd_com_additions(current_solution, starting_entities, build_options)
+    
+
+    return variations
+
+def remove_step_from_build_order_possibilities():
+    variations = []
+    return variations
+
+def apply_variation(current_solution, variation):
+    new_solution = copy(current_solution)
+    if len(current_solution) < variation.idx:
+        raise ValueError("can't inject variation at nonexistent index")
+    if variation.type == 'add':
+        if variation.action == 'selfd':
+            raise NotImplementedError()
+        new_solution.insert(variation.idx, variation.action)
+        return new_solution
+
+    else:
+        raise NotImplementedError()
 
 def vary(current_solution, starting_entities, build_options):
-    #generate all the possible variations
-    possible_variations = set()
-    current_entities = generate_current_entities(current_solution, starting_entities, build_options)
+    
+    variations = []
+    variations += add_step_to_build_order_possibilities(current_solution, starting_entities, build_options)
+    variations += remove_step_from_build_order_possibilities()
 
-    build_actions = possible_builds(current_entities, build_options)
-    possible_variations.update(build_actions) 
+    #choose a variation
+    if len(variations) == 0:
+        raise ValueError('No variations...')
 
-    det_com_actions = possible_det_com(current_entities, build_options)
-    possible_variations.update(det_com_actions)
+    chosen_variation = random.choice(variations)
+    print(f'chosen_variation: {chosen_variation}')
 
-    reclaim_actions = possible_reclaims(current_entities, build_options)
-    possible_variations.update(reclaim_actions)
 
-    #randomly choose to add or remove a variation
-    current_len = len(current_solution)
+    #apply the variation
+    new_solution = apply_variation(current_solution, chosen_variation)
+    print(f'new sol:')
+    for i, action in enumerate(new_solution):
+        print(i, action.type, action.entity, sep='\t')
 
-    choice = random.choice(tuple(possible_variations))
-
-    new_sol = copy(current_solution)
-    new_sol.append(choice)
-
-    return new_sol
+    return new_solution

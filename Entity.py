@@ -21,6 +21,7 @@ class Entity:
     is_reclaimable: bool = field(default = True)
     is_factory: bool = field(default = False)
     is_reclaimer: bool = field(default = False)
+    is_possible_final_constructor: bool = field(default = False)
 
     def __repr__(self):
         return f'ent{self.id}-{self.id_string} '

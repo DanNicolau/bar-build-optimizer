@@ -54,7 +54,7 @@ def main():
 
     # starting entities
     starting_entities = ['commander']
-    desired_entities = ['botlab', 'conbot']
+    desired_entities = ['botlab', 'conbot', 'conbot']
 
     print(f'Starting optimization for : {desired_entities}')
 
@@ -67,4 +67,4 @@ def main():
 if __name__ == "__main__":
     with cProfile.Profile() as pr:
         main()
-    pr.print_stats(sort='cumtime')
+    pr.print_stats(sort='tottime')
