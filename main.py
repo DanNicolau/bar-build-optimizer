@@ -13,6 +13,7 @@ def main():
         # "timestep": 1.0,
         # assume infinite if not defined
         "build_restrictions": {
+            'commander': 1,
             'commander_wreck': 1,
             'mex': 3,
             't2mex': 0,

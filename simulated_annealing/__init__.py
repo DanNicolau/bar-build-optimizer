@@ -25,7 +25,7 @@ def optimize(desired_entities, starting_entities, build_options):
         #     current_solution = variation
         #     best_score = variation_score
 
-        if iterations == 100:
+        if iterations == 10:
             done = True
 
     print('after 100 iters:')

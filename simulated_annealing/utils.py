@@ -24,12 +24,19 @@ def print_actions(actions: list):
 def update_counts(counts, action):
     if action.type == 'build':
         counts[action.entity] = 1 if not action.entity in counts else counts[action.entity] + 1
-    elif action.type == 'reclaim' or action.type == 'selfd':
+    elif action.type == 'reclaim' or (action.type == 'selfd' and action.entity != 'commander'):
         if (not action.entity in counts) or counts[action.entity] < 0:
             print(counts)
             raise ValueError("cannot have negative or reclaim nonexistent entity")
         else:
             counts[action.entity] -= 1
+    elif action.type == 'selfd' and action.entity == 'commander':
+        if not 'commander_wreck' in counts:
+            counts['commander'] -= 1
+            counts['commander_wreck'] = 1
+        else:
+            counts['commander'] -= 1
+            counts['commander_wreck'] += 1
 
 def count_sum(counts):
     sum = 0

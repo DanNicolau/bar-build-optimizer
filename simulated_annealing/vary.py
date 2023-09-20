@@ -27,17 +27,47 @@ def generate_build_list(counts, lib):
 
     return list(build_list)
 
+def is_under_ent_maxes(current_solution, initial_counts, variation, build_options):
+    maxes = build_options['build_restrictions']
+    counts = copy(initial_counts)
+    test_solution = copy(current_solution)
+    test_solution.insert(variation.idx, variation.action)
+
+    default_allow = maxes['default_allow']
+    # print(f'\t in iuem')
+    # print(f'{counts}')
+    # print(f'{maxes}')
+
+    for action in test_solution:
+        update_counts(counts, action)
+
+        # print(f'checking_action: {action}')
+
+        for ent in counts:
+            # print(f'checking_ent: {ent}')
+            if ent in maxes and counts[ent] > maxes[ent]:
+                # print(f'too many {ent}')
+                return False
+            # TODO handle default allow
+            if (not ent in maxes) and (not default_allow):
+                return False
+
+    return True
+
 def build_step_additions(current_solution, starting_entities, build_options):
+
     variations = []
     lib = build_options['entity_library']
     counts = entity_counts(starting_entities)
+    initial_counts = copy(counts)
 
     # generate variations at idx 0
     build_list = generate_build_list(counts, lib)
     for buildable in build_list:
         new_action = Action('build', buildable)
         new_variation = Variation(new_action, 0, 'add')
-        variations.append(new_variation)
+        if is_under_ent_maxes(current_solution, initial_counts, new_variation, build_options):
+            variations.append(new_variation)
 
     # generate legal variations after every action is performed
     for i in range(len(current_solution)):
@@ -48,8 +78,8 @@ def build_step_additions(current_solution, starting_entities, build_options):
         for buildable in build_list:
             new_action = Action('build', buildable)
             new_variation = Variation(new_action, i+1, 'add')
-            variations.append(new_variation)
-
+            if is_under_ent_maxes(current_solution, initial_counts, new_variation, build_options):
+                variations.append(new_variation)
 
     return variations
 
@@ -135,9 +165,9 @@ def reclaim_step_additions(current_solution, starting_entities, build_options):
             
     return variations
 
-# this could possibly leave 0 constructors if one is reclaimed after the com selfds
-# easy - we just check to make sure we have at least one "final con" remaining
+# only illegal if there is no commander to blow up or if it is the final con
 def is_legal_selfd(solution, starting_counts, variation, lib):
+    print('\t\t in ilsd')
     test_solution = copy(solution)
     test_counts = copy(starting_counts)
 
@@ -145,17 +175,25 @@ def is_legal_selfd(solution, starting_counts, variation, lib):
     test_solution.insert(variation.idx, variation.action)
 
     for action in test_solution:
+        if action.type == 'selfd' and action.entity == 'commander':
+            print('REACHED')
+            print(test_counts['commander'])
+            if test_counts['commander'] == 0:
+                print('no commander to blow up')
+                return False # TODO this changes if rez can occur
+        
         update_counts(test_counts, action)
-        if 'commander' in test_counts and test_counts['commander'] == 0:
-            return False # TODO this changes if rez can occur
 
         final_con_count = 0
         for ent in test_counts:
             if lib[ent].is_possible_final_constructor:
-                final_con_count += 1
+                final_con_count += test_counts[ent]
+
         if final_con_count < 1:
             return False
     
+    print('\t\t\t\t NOTHING WRONG')
+
     return True
 
 
@@ -165,19 +203,25 @@ def selfd_com_additions(current_solution, starting_entities, build_options):
     lib = build_options['entity_library']
     counts = entity_counts(starting_entities)
 
+    print(current_solution)
+
     # idx 0
     new_action = Action('selfd','commander')
     new_variation = Variation(new_action, 0, 'add')
-
     if is_legal_selfd(current_solution, counts, new_variation, lib):
         variations.append(new_variation)
 
+
     # after every action
     for i, action in enumerate(current_solution):
-        new_variation = Variation(new_action, i, 'add')
+        new_variation = Variation(new_action, i+1, 'add')
         if is_legal_selfd(current_solution, counts, new_variation, lib):
             variations.append(new_variation)
+
+    print('selfd variations')
     
+    print(variations)
+
     return variations
 
 
@@ -188,7 +232,6 @@ def add_step_to_build_order_possibilities(current_solution, starting_entities, b
     variations += reclaim_step_additions(current_solution, starting_entities, build_options)
     variations += selfd_com_additions(current_solution, starting_entities, build_options)
     
-
     return variations
 
 def remove_step_from_build_order_possibilities():
