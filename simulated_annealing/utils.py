@@ -8,8 +8,8 @@ Action = namedtuple('Action', ['type', 'entity'])
 @dataclass
 class Variation:
     action: Action # None for removal
-    idx: int # -1 for append?
-    type: str # add, removal
+    idx: int
+    type: str # add, remove
 
 def entity_counts(entities):
     counts = {}
