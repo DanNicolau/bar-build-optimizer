@@ -22,7 +22,7 @@ def main():
             't2botlab': 0,
             'turbine': 4,
             'conturret': 1,
-            'conbot': 1,
+            'conbot': 2,
             't2conbot': 0,
             'fus': 0,
             'afus': 0,
@@ -55,7 +55,10 @@ def main():
 
     # starting entities
     starting_entities = ['commander']
-    desired_entities = ['botlab', 'conbot', 'conbot']
+    desired_entities = {
+        'botlab': 1,
+        'conbot': 2
+    }
 
     print(f'Starting optimization for : {desired_entities}')
 

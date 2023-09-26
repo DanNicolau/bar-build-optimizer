@@ -16,7 +16,7 @@
 # alternatively just check legality after and loop back to a different option
 
 import random
-from copy import copy
+from copy import copy, deepcopy
 from simulated_annealing.utils import entity_counts, update_counts, count_sum, Action, Variation
 
 def generate_build_list(counts, lib):
@@ -207,7 +207,7 @@ def selfd_com_additions(current_solution, starting_entities, build_options):
     lib = build_options['entity_library']
     counts = entity_counts(starting_entities)
 
-    print(current_solution)
+    # print(current_solution)
 
     # idx 0
     new_action = Action('selfd','commander')
@@ -251,7 +251,10 @@ def apply_variation(current_solution, variation):
         return new_solution
 
     elif variation.type == 'remove':
+        # print(f'pre del: ({len(new_solution)}) {new_solution}')
         del new_solution[variation.idx]
+        # print(f'\tREMOVED w {variation}')
+        # print(f'after del ({len(new_solution)}): {new_solution}')
         return new_solution
     else:
         raise ValueError('Unknown variation type')
@@ -350,19 +353,24 @@ def vary(current_solution, starting_entities, build_options):
     variations += add_step_to_build_order_possibilities(current_solution, starting_entities, build_options)
     variations += remove_step_from_build_order_possibilities(current_solution, starting_entities, build_options)
 
+    # print(variations)
+
     #choose a variation
     if len(variations) == 0:
         #this should not occur, we must be able to backtrack a build with a remove or a remove with a build
         raise ValueError('No variations...')
 
     chosen_variation = random.choice(variations)
-    print(f'chosen_variation: {chosen_variation}')
+
+    # print(f'chosen_variation: {chosen_variation}')
 
 
     #apply the variation
+    # print(f'\nold sol ({len(current_solution)}): {current_solution}')
     new_solution = apply_variation(current_solution, chosen_variation)
-    print(f'new sol:')
-    for i, action in enumerate(new_solution):
-        print(i, action.type, action.entity, sep='\t')
+    # print(f'new sol ({len(new_solution)}): {new_solution}')
+    # print(f'new sol:')
+    # for i, action in enumerate(new_solution):
+        # print(i, action.type, action.entity, sep='\t')
 
     return new_solution

@@ -1,56 +1,36 @@
-from simulated_annealing.utils import entity_counts
+from simulated_annealing.utils import entity_counts, update_counts
 from collections import namedtuple
 
-# def is_valid_solution(solution, desired_entities):
+# THIS HAS A BUG
 
-#     desired_entities_counts = entity_counts(desired_entities)
+def is_valid(solution, starting_entities, desired_entities):
+    
+    final_counts = entity_counts(starting_entities)
+    #get final counts
+    for action in solution:
+        update_counts(final_counts, action)
 
-#     running_ent_count = {}
+    for dent in desired_entities:
+        if not dent in final_counts:
+            return False
+        elif final_counts[dent] < desired_entities[dent]:
+            return False
 
-#     for action in solution:
-#         if action.entity in desired_entities:
-#             if not action.entity in running_ent_count:
-#                 running_ent_count[action.entity] = 1
-#                 if action.type != 'build':
-#                     raise ValueError()
-#             else:
-#                 running_ent_count[action.entity] += 1 if action.type == 'build' else -1
+    return True
 
-#     for d in desired_entities_counts:
-#         if not d in running_ent_count:
-#             return False
-#         if running_ent_count[d] < desired_entities_counts[d]:
-#             return False
-#     return True
+def time_to_complete_actions(actions, starting_entities, build_options):
+    time = 0
 
-# def time_to_complete_actions(actions, starting_entities, build_options):
-#     time = 0
-#     resources = {
-#         'metal': min( build_options['base_metal_storage'], build_options['starting_metal']),
-#         'energy': min( build_options['base_energy_storage'], build_options['starting_energy']),
-#         'entities': generate_current_entities(actions, starting_entities, build_options)
-#     }
+    return len(actions)
+    return time
 
-#     for action in actions:
-#         time += 1
-#         # print(resources)
+# lower is better
+def evaluate(solution, desired_entities, starting_entities, build_options):
 
-#     return time
+    if not is_valid(solution, starting_entities, desired_entities):
+        return 4294967295.0 # arbitrarily large num
 
-# # lower is better
-# def evaluate(solution, desired_entities, starting_entities, build_options):
-
-#     if not is_valid_solution(solution, desired_entities):
-#         return 4294967295.0 # arbitrarily large numb
-
-#     return time_to_complete_actions(solution, starting_entities, build_options)
-
-#     time_to_build = 0
-#     # for action in solution:
-#     #     time_to_build += time_to_complete_action(action)
-
-
-#     return time_to_build
+    return time_to_complete_actions(solution, starting_entities, build_options)
 
 # # greedy for now
 # # theres room to further optimize by caching the score of the previous best solution
