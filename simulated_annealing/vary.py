@@ -173,6 +173,7 @@ def check_legal_selfd_at_action_before_count_update(action, test_counts):
     if action.type == 'selfd' and action.entity == 'commander':
         if test_counts['commander'] == 0:
             return False # TODO this changes if rez can occur
+    return True
         
 def check_legal_selfd_at_action_after_count_update(test_counts, lib):
     final_con_count = 0
@@ -182,6 +183,7 @@ def check_legal_selfd_at_action_after_count_update(test_counts, lib):
 
     if final_con_count < 1:
         return False
+    return True
 
 # only illegal if there is no commander to blow up or if it is the final con
 def is_legal_selfd(solution, starting_counts, variation, lib):
@@ -283,7 +285,7 @@ def is_legal_remove(current_solution, starting_entities, new_variation, build_op
     for action in test_solution:
         #                                   need to check legal selfds
         if action.type == 'selfd':
-            if not check_legal_selfd_at_action_before_count_update():
+            if not check_legal_selfd_at_action_before_count_update(action, test_counts):
                 return False
         update_counts(test_counts, action)
         if action.type == 'selfd':

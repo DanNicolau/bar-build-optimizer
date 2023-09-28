@@ -16,20 +16,21 @@ def main():
             'commander': 1,
             'commander_wreck': 1,
             'mex': 3,
-            't2mex': 0,
+            't2mex': 3,
             'geo': 0,
             'botlab': 1,
-            't2botlab': 0,
+            't2botlab': 1,
             'turbine': 4,
-            'conturret': 1,
-            'conbot': 2,
-            't2conbot': 0,
-            'fus': 0,
-            'afus': 0,
-            'e_store': 0,
-            'm_store': 0,
-            'conv': 0,
-            't2conv': 0,
+            'conturret': 8,
+            'conbot': 4,
+            't2conbot': 1,
+            'fus': 1,
+            'afus': 1,
+            'e_store': 2,
+            'm_store': 1,
+            'conv': 16,
+            't2conv': 2,
+            'nuke': 1,
 
             # and multiples
 
@@ -41,7 +42,7 @@ def main():
 
             'default_allow': False,
         },
-        "time_to_blow_com": 15,
+        "time_to_blow_com": 10, # this is probably a bit lower with practice but keeping it around 10 will be ok considering getting the reclaimer to show up
         "base_metal_storage": 500,
         "base_energy_storage": 500,
         "entity_library": None,
@@ -56,8 +57,9 @@ def main():
     # starting entities
     starting_entities = ['commander']
     desired_entities = {
-        'botlab': 1,
-        'conbot': 2
+        # 'botlab': 1,
+        # 'conbot': 2
+        'nuke': 1
     }
 
     print(f'Starting optimization for : {desired_entities}')

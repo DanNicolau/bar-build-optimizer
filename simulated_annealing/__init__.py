@@ -26,7 +26,7 @@ def optimize(desired_entities, starting_entities, build_options):
         iterations += 1
 
 
-        if iterations == 10000:
+        if iterations == 1000:
             done = True
 
     print('after 100 iters:')
